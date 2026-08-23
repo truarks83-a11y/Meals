@@ -207,7 +207,28 @@ const MEAL_DB = [
     }
 
     // ── STATE ──────────────────────────────────────────────────────────
-    let state = {
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('mealplanner');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Don't restore modal/UI state
+          return { ...parsed, modal: null, pickIdx: null, shareView: false, search: "", showForm: false, ferr: "", copied: false };
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    function saveState(s) {
+      try {
+        // Only save the important stuff, not UI state
+        const toSave = { people: s.people, plan: s.plan, list: s.list, approved: s.approved, skipped: s.skipped, checked: s.checked, favs: s.favs, removed: s.removed, custom: s.custom, weekDate: s.weekDate };
+        localStorage.setItem('mealplanner', JSON.stringify(toSave));
+      } catch(e) {}
+    }
+
+    const savedState = loadState();
+    let state = savedState || {
       people: 4,
       tab: "library",
       plan: [],
@@ -229,8 +250,20 @@ const MEAL_DB = [
       weekDate: "",
     };
 
+    // Set correct tab based on whether we have a plan
+    if (!state.tab) state.tab = state.plan && state.plan.length > 0 ? "plan" : "library";
+    if (!state.modal) state.modal = null;
+    if (!state.pickIdx) state.pickIdx = null;
+    if (!state.shareView) state.shareView = false;
+    if (!state.search) state.search = "";
+    if (!state.showForm) state.showForm = false;
+    if (!state.form) state.form = { name:"", desc:"", prep:"", cook:"", cal:"", cost:"", ings:"", steps:"" };
+    if (!state.ferr) state.ferr = "";
+    if (!state.copied) state.copied = false;
+
     function setState(updates) {
       state = { ...state, ...updates };
+      saveState(state);
       render();
     }
 
