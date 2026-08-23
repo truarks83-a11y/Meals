@@ -162,6 +162,27 @@ const MEAL_DB = [
   { id:21, name:"Shepherd's Pie with Tater Tot Topping", description:"Hearty ground beef and veggie filling topped with crispy golden tater tots instead of mashed potatoes.", prepTime:"15 min", cookTime:"35 min", cookMins:35, cal:570, cost:12, ingredients:[{amount:"1.5 lbs",name:"ground beef",aisle:"Meat & Fish"},{amount:"1 bag (32oz)",name:"frozen tater tots",aisle:"Frozen"},{amount:"1 cup",name:"frozen peas and carrots",aisle:"Frozen"},{amount:"1 can",name:"cream of mushroom soup",aisle:"Pantry"},{amount:"1",name:"onion, diced",aisle:"Produce"},{amount:"1 cup",name:"beef broth",aisle:"Pantry"},{amount:"1 cup",name:"shredded cheddar",aisle:"Dairy & Eggs"},{amount:"1 tsp",name:"garlic powder",aisle:"Herbs & Spices"}], steps:["Preheat oven to 400°F.","Brown ground beef and onion in an oven-safe skillet; drain fat.","Stir in cream of mushroom soup, beef broth, peas and carrots, and garlic powder; simmer 5 min.","Sprinkle cheddar over the beef mixture.","Arrange frozen tater tots in a single layer on top.","Bake 25–30 min until tater tots are golden and crispy and filling is bubbling."] },
 ];
 
+    // ── SHARED SYNC ────────────────────────────────────────────────────
+    // Paste your Apps Script Web App URL here after deploying
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxa29TbW6v6dcXZgbiJY61pnoJdSUK_fBAtt78lPz-bPbDGn3fmPc2M_lyKIFBBttEI/exec";
+
+    async function loadFromSheet() {
+      if (SCRIPT_URL === "YOUR_SCRIPT_URL_HERE") return null;
+      try {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+        return Object.keys(data).length > 0 ? data : null;
+      } catch(e) { return null; }
+    }
+
+    async function saveToSheet(s) {
+      if (SCRIPT_URL === "YOUR_SCRIPT_URL_HERE") return;
+      try {
+        const toSave = { people: s.people, plan: s.plan, list: s.list, approved: s.approved, skipped: s.skipped, checked: s.checked, favs: s.favs, removed: s.removed, custom: s.custom, weekDate: s.weekDate, lastUpdated: new Date().toISOString() };
+        await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(toSave) });
+      } catch(e) {}
+    }
+
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
     const AISLES = ["Produce","Meat & Fish","Dairy & Eggs","Frozen","Grains & Bread","Pantry","Herbs & Spices"];
 
@@ -264,6 +285,7 @@ const MEAL_DB = [
     function setState(updates) {
       state = { ...state, ...updates };
       saveState(state);
+      saveToSheet(state); // sync to Google Sheet for shared access
       render();
     }
 
@@ -701,8 +723,38 @@ const MEAL_DB = [
       }
     }
 
-    // Initial render
-    render();
+    // Initial render — try to load from shared sheet first
+    async function init() {
+      const syncBanner = document.createElement("div");
+      syncBanner.style.cssText = "position:fixed;top:0;left:0;right:0;background:#c8a96e;color:#111;text-align:center;padding:6px;font-size:0.82rem;font-weight:600;z-index:9999;";
+      syncBanner.textContent = "Syncing with shared plan…";
+
+      if (SCRIPT_URL !== "YOUR_SCRIPT_URL_HERE") {
+        document.body.appendChild(syncBanner);
+        const sheetData = await loadFromSheet();
+        if (sheetData && sheetData.plan && sheetData.plan.length > 0) {
+          state = { ...state, ...sheetData, modal: null, pickIdx: null, shareView: false, search: "", showForm: false, ferr: "", copied: false };
+          state.tab = "plan";
+          saveState(state);
+        }
+        document.body.removeChild(syncBanner);
+      }
+      render();
+
+      // Poll for updates every 30 seconds so wife's changes show up
+      if (SCRIPT_URL !== "YOUR_SCRIPT_URL_HERE") {
+        setInterval(async () => {
+          const sheetData = await loadFromSheet();
+          if (sheetData && sheetData.lastUpdated && sheetData.lastUpdated !== state.lastUpdated) {
+            state = { ...state, ...sheetData, modal: state.modal, pickIdx: state.pickIdx, shareView: state.shareView };
+            saveState(state);
+            render();
+          }
+        }, 30000);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
