@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Meal Planner">
+  <meta name="theme-color" content="#111111">
+  <title>Family Meal Planner</title>
+  <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Family Meal Planner&quot;,&quot;short_name&quot;:&quot;Meals&quot;,&quot;start_url&quot;:&quot;/Meals/&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%23111111&quot;,&quot;theme_color&quot;:&quot;%23111111&quot;}">
+  <style>
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #111; color: #f0ebe0; min-height: 100vh; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 4px; }
+  h1 span { color: #c8a96e; }
+  .sub { color: #666; font-size: 0.85rem; margin-bottom: 24px; }
+  .row { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  select { background: #1a1a1a; border: 1px solid #333; color: #f0ebe0; padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
+  .btn { background: #c8a96e; color: #111; border: none; padding: 10px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+  .btn:hover { background: #d4b97e; }
+  .btn-sm { background: #222; border: 1px solid #333; color: #ccc; padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+  .btn-sm:hover { border-color: #c8a96e; color: #c8a96e; }
+  .btn-green { border-color: #2e8a4a; color: #4aaa6a; }
+  .btn-green.on { background: #1a3a26; }
+  .btn-red { border-color: #8a3030; color: #e08080; }
+  .btn-red.on { background: #2a1414; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #1a1a1a; border-radius: 8px; padding: 4px; width: fit-content; }
+  .tab { padding: 8px 18px; border: none; background: transparent; color: #666; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+  .tab.on { background: #c8a96e; color: #111; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; }
+  .card.approved { border-color: #2e8a4a; }
+  .card.skipped { opacity: 0.5; border-color: #8a3030; }
+  .card-top { background: #111; padding: 8px 14px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #c8a96e; display: flex; justify-content: space-between; }
+  .card.approved .card-top { color: #4aaa6a; }
+  .card.skipped .card-top { color: #e08080; }
+  .card-body { padding: 14px; }
+  .meal-name { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+  .meal-desc { font-size: 0.82rem; color: #666; line-height: 1.5; margin-bottom: 8px; }
+  .meal-info { display: flex; gap: 14px; font-size: 0.78rem; color: #888; padding: 8px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; margin-bottom: 10px; }
+  .meal-info b { color: #c8a96e; }
+  textarea { width: 100%; background: #111; border: 1px solid #222; color: #ccc; padding: 7px 10px; border-radius: 6px; font-size: 0.82rem; resize: none; font-family: inherit; margin-bottom: 8px; }
+  textarea:focus { outline: none; border-color: #c8a96e44; }
+  textarea::placeholder { color: #444; }
+  .card-btns { display: flex; gap: 6px; margin-bottom: 6px; }
+  .card-btns .btn-sm { flex: 1; text-align: center; }
+  .bar { margin-top: 20px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .bar p { font-size: 0.85rem; color: #888; }
+  .bar p strong { color: #ccc; }
+  .bar .prog { font-size: 0.78rem; color: #888; margin-top: 4px; }
+  .bar .prog span { color: #4aaa6a; font-weight: 600; }
+  .shop-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .shop-head h2 { font-size: 1.3rem; }
+  .aisle { margin-bottom: 20px; }
+  .aisle-title { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: #c8a96e; font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #222; }
+  .shop-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
+  .shop-row.done { opacity: 0.4; }
+  .chk { width: 18px; height: 18px; border: 1.5px solid #444; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .chk.on { background: #c8a96e; border-color: #c8a96e; }
+  .chk span { color: #111; font-size: 0.7rem; font-weight: 700; }
+  .item-name { flex: 1; font-size: 0.88rem; color: #ccc; font-weight: 300; }
+  .shop-row.done .item-name { text-decoration: line-through; }
+  .item-qty { font-size: 0.8rem; color: #555; }
+  .lib-bar { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .lib-search { flex: 1; min-width: 140px; background: #1a1a1a; border: 1px solid #333; color: #f0ebe0; padding: 9px 12px; border-radius: 8px; font-size: 0.88rem; }
+  .lib-search:focus { outline: none; border-color: #c8a96e; }
+  .lib-count { font-size: 0.75rem; color: #444; margin-bottom: 10px; }
+  .rrow { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .rrow.del { opacity: 0.4; }
+  .rname { font-weight: 600; font-size: 0.92rem; }
+  .rmeta { font-size: 0.75rem; color: #666; }
+  .rbtns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .form-box { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .form-box h3 { font-size: 1rem; margin-bottom: 14px; }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .field label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #666; }
+  .field input { background: #111; border: 1px solid #333; color: #f0ebe0; padding: 9px 11px; border-radius: 7px; font-size: 0.88rem; }
+  .field input:focus { outline: none; border-color: #c8a96e; }
+  .field textarea { margin-bottom: 0; }
+  .field-hint { font-size: 0.72rem; color: #444; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+  .ferr { color: #e08080; font-size: 0.8rem; margin-top: 6px; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; max-width: 540px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 26px; position: relative; }
+  .modal h2 { font-size: 1.3rem; margin-bottom: 4px; padding-right: 32px; }
+  .modal-day { font-size: 0.7rem; color: #c8a96e; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+  .close-btn { position: absolute; top: 14px; right: 14px; background: #222; border: none; color: #ccc; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.85rem; }
+  .slbl { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: #666; margin-top: 18px; margin-bottom: 8px; font-weight: 600; }
+  .ing-row { display: flex; gap: 8px; font-size: 0.87rem; padding: 5px 0; border-bottom: 1px solid #1a1a1a; }
+  .ing-amt { color: #c8a96e; font-weight: 600; min-width: 70px; font-size: 0.8rem; }
+  .ing-name { color: #bbb; }
+  .step-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .step-n { width: 22px; height: 22px; min-width: 22px; background: #c8a96e; color: #111; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .step-t { font-size: 0.87rem; color: #bbb; line-height: 1.6; }
+  .share-page { background: #111; min-height: 100vh; }
+  .share-hdr { background: #1a1a1a; border-bottom: 1px solid #2a2a2a; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+  .share-hdr h2 { font-size: 0.95rem; font-weight: 700; }
+  .share-hdr h2 em { font-style: italic; color: #c8a96e; }
+  .share-body { max-width: 580px; margin: 0 auto; padding: 20px 16px 60px; }
+  .share-sec { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8a96e; font-weight: 600; margin: 28px 0 12px; }
+  .share-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+  .share-day { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: #c8a96e; margin-bottom: 5px; }
+  .share-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+  .share-desc { font-size: 0.83rem; color: #666; line-height: 1.5; margin-bottom: 10px; }
+  .share-note { font-size: 0.8rem; color: #888; font-style: italic; padding: 6px 10px; background: #111; border-radius: 6px; margin-bottom: 10px; border-left: 2px solid #c8a96e44; }
+  .share-meta { display: flex; gap: 16px; font-size: 0.78rem; color: #666; padding: 8px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; margin-bottom: 10px; }
+  .share-meta b { color: #c8a96e; }
+  .share-shop { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px; }
+  .share-cat { margin-bottom: 16px; }
+  .share-cat:last-child { margin-bottom: 0; }
+  .share-cat-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: #c8a96e; font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #222; }
+  .share-item { display: flex; gap: 8px; font-size: 0.86rem; color: #bbb; padding: 5px 0; border-bottom: 1px solid #1a1a1a; }
+  .share-qty { color: #555; min-width: 70px; font-size: 0.8rem; }
+  .pick-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #222; cursor: pointer; transition: background 0.15s; }
+  .pick-row:hover { background: #222; margin: 0 -4px; padding: 10px 4px; border-radius: 6px; }
+  .pick-row.current { opacity: 0.35; cursor: default; }
+  .pick-row-info .pick-name { font-size: 0.92rem; font-weight: 600; margin-bottom: 2px; }
+  .pick-row-info .pick-meta { font-size: 0.75rem; color: #666; }
+  .pick-btn { background: #c8a96e; color: #111; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  @media print { .share-hdr { display: none; } .share-body { padding: 0; max-width: 100%; } }
+  .empty { text-align: center; padding: 60px 20px; color: #444; }
+  .empty .ico { font-size: 2.5rem; margin-bottom: 10px; }
+
+    /* Extra styles for standalone HTML */
+    .pick-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #222; cursor: pointer; transition: background 0.15s; }
+    .pick-row:hover { background: #222; margin: 0 -4px; padding: 10px 4px; border-radius: 6px; }
+    .pick-row.current { opacity: 0.35; cursor: default; }
+    .pick-row-info .pick-name { font-size: 0.92rem; font-weight: 600; margin-bottom: 2px; }
+    .pick-row-info .pick-meta { font-size: 0.75rem; color: #666; }
+    .pick-btn { background: #c8a96e; color: #111; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+const MEAL_DB = [
+  { id:1, name:"Homemade Pepperoni Pizza", description:"Easy homemade pizza with crispy crust, gooey mozzarella, and classic pepperoni.", prepTime:"20 min", cookTime:"15 min", cookMins:15, cal:580, cost:18, ingredients:[{amount:"1 lb",name:"store-bought pizza dough",aisle:"Grains & Bread"},{amount:"3/4 cup",name:"pizza sauce",aisle:"Pantry"},{amount:"3 cups",name:"shredded mozzarella",aisle:"Dairy & Eggs"},{amount:"4 oz",name:"pepperoni slices",aisle:"Meat & Fish"},{amount:"1 tbsp",name:"olive oil",aisle:"Pantry"},{amount:"1 tsp",name:"Italian seasoning",aisle:"Herbs & Spices"}], steps:["Preheat oven to 450°F with a baking sheet inside to get hot.","Stretch dough on a floured surface into a 12-inch round.","Brush edges lightly with olive oil.","Spread pizza sauce evenly over the dough.","Top with mozzarella then pepperoni.","Slide onto hot baking sheet; bake 12–15 min until crust is golden and cheese is bubbly.","Slice and serve."] },
+  { id:2, name:"Pesto Pasta with Garlic Bread", description:"Easy pesto pasta with peas and carrots on the side and buttery garlic bread.", prepTime:"10 min", cookTime:"20 min", cookMins:20, cal:520, cost:14, ingredients:[{amount:"400g",name:"penne or spaghetti",aisle:"Grains & Bread"},{amount:"1/2 cup",name:"basil pesto",aisle:"Pantry"},{amount:"1 cup",name:"frozen peas and carrots",aisle:"Frozen"},{amount:"1 loaf",name:"Italian bread",aisle:"Grains & Bread"},{amount:"4 tbsp",name:"butter, softened",aisle:"Dairy & Eggs"},{amount:"2 cloves",name:"garlic, minced",aisle:"Produce"},{amount:"1/4 cup",name:"parmesan, grated",aisle:"Dairy & Eggs"}], steps:["Cook pasta per package instructions; drain, reserving 1/2 cup pasta water.","Cook frozen peas and carrots in salted boiling water 4 min; drain.","Toss hot pasta with pesto, adding pasta water a splash at a time until saucy.","Mix softened butter with minced garlic; spread on sliced bread.","Bake garlic bread at 375°F for 10 min until golden and crispy.","Plate pasta, sprinkle with parmesan, and serve with garlic bread and veggies on the side."] },
+  { id:3, name:"Chicken Quesadillas with Black Beans & Rice", description:"Cheesy chicken quesadillas with seasoned black beans and fluffy rice on the side.", prepTime:"15 min", cookTime:"20 min", cookMins:20, cal:540, cost:16, ingredients:[{amount:"2",name:"chicken breasts, cooked and shredded",aisle:"Meat & Fish"},{amount:"8",name:"flour tortillas",aisle:"Grains & Bread"},{amount:"2 cups",name:"shredded Mexican cheese blend",aisle:"Dairy & Eggs"},{amount:"1 can",name:"black beans, drained and rinsed",aisle:"Pantry"},{amount:"1 1/2 cups",name:"long grain white rice",aisle:"Grains & Bread"},{amount:"1 tsp",name:"cumin",aisle:"Herbs & Spices"},{amount:"1/2 cup",name:"sour cream",aisle:"Dairy & Eggs"}], steps:["Cook rice per package instructions.","Warm black beans in a small pot with cumin, salt, and a splash of water.","Lay a tortilla flat; sprinkle cheese on one half then top with shredded chicken and fold over.","Cook quesadilla in a dry skillet over medium heat 2–3 min per side until golden and crispy.","Repeat with remaining tortillas.","Cut into wedges and serve with black beans, rice, and sour cream on the side."] },
+  { id:4, name:"Spaghetti & Meatballs with Garlic Bread", description:"Classic homemade meatballs in marinara over spaghetti with buttery garlic bread.", prepTime:"20 min", cookTime:"30 min", cookMins:30, cal:620, cost:18, ingredients:[{amount:"400g",name:"spaghetti",aisle:"Grains & Bread"},{amount:"500g",name:"ground beef",aisle:"Meat & Fish"},{amount:"1 jar (24oz)",name:"marinara sauce",aisle:"Pantry"},{amount:"1/2 cup",name:"breadcrumbs",aisle:"Grains & Bread"},{amount:"1",name:"egg",aisle:"Dairy & Eggs"},{amount:"1/2 cup",name:"parmesan, grated",aisle:"Dairy & Eggs"},{amount:"1 loaf",name:"Italian bread",aisle:"Grains & Bread"},{amount:"4 tbsp",name:"butter, softened",aisle:"Dairy & Eggs"},{amount:"2 cloves",name:"garlic, minced",aisle:"Produce"}], steps:["Mix ground beef, breadcrumbs, egg, half the parmesan, salt, and pepper; roll into golf ball-sized meatballs.","Brown meatballs in olive oil in a large skillet, turning to brown all sides, about 8 min.","Pour marinara over meatballs; simmer on low 15 min.","Cook spaghetti per package instructions; drain.","Mix butter with garlic; spread on sliced bread and bake at 375°F for 10 min until golden.","Serve meatballs and sauce over spaghetti, topped with remaining parmesan, with garlic bread on the side."] },
+  { id:5, name:"Grilled Ribeye with Mashed Potatoes & Broccoli", description:"Juicy grilled ribeye steaks with creamy mashed potatoes and steamed broccoli.", prepTime:"15 min", cookTime:"25 min", cookMins:25, cal:680, cost:32, ingredients:[{amount:"4",name:"ribeye steaks",aisle:"Meat & Fish"},{amount:"2 lbs",name:"russet potatoes, peeled and cubed",aisle:"Produce"},{amount:"4 cups",name:"broccoli florets",aisle:"Produce"},{amount:"4 tbsp",name:"butter",aisle:"Dairy & Eggs"},{amount:"1/2 cup",name:"whole milk",aisle:"Dairy & Eggs"},{amount:"1 tsp",name:"garlic powder",aisle:"Herbs & Spices"},{amount:"2 tbsp",name:"olive oil",aisle:"Pantry"}], steps:["Boil potatoes in salted water 15–18 min until fork tender; drain.","Mash potatoes with butter, milk, salt, and pepper until smooth and creamy.","Steam broccoli 5–6 min until bright green and just tender; season with salt and butter.","Rub steaks with olive oil, garlic powder, salt, and pepper.","Grill steaks on high heat 3–4 min per side for medium (adjust to your liking).","Rest steaks 5 min before serving alongside mashed potatoes and broccoli."] },
+  { id:6, name:"Grilled Chicken Kabobs with Rice", description:"Juicy grilled chicken kabobs with colorful bell peppers and onions over fluffy rice.", prepTime:"20 min", cookTime:"20 min", cookMins:20, cal:480, cost:18, ingredients:[{amount:"2 lbs",name:"chicken breast, cut into chunks",aisle:"Meat & Fish"},{amount:"2",name:"bell peppers, cut into chunks",aisle:"Produce"},{amount:"2",name:"onions, cut into chunks",aisle:"Produce"},{amount:"1 1/2 cups",name:"long grain white rice",aisle:"Grains & Bread"},{amount:"3 tbsp",name:"olive oil",aisle:"Pantry"},{amount:"2 tsp",name:"garlic powder",aisle:"Herbs & Spices"},{amount:"1 tsp",name:"paprika",aisle:"Herbs & Spices"}], steps:["Cook rice per package instructions.","Mix olive oil, garlic powder, paprika, salt, and pepper; toss with chicken chunks to coat.","Thread chicken, bell peppers, and onions alternately onto skewers.","Grill on medium-high heat 4–5 min per side until chicken is cooked through and veggies are slightly charred.","Rest 5 min then serve kabobs over rice."] },
+  { id:7, name:"Burgers & Fries", description:"Juicy homemade cheeseburgers with crispy oven fries — a family favorite.", prepTime:"15 min", cookTime:"25 min", cookMins:25, cal:620, cost:16, ingredients:[{amount:"1.5 lbs",name:"80/20 ground beef",aisle:"Meat & Fish"},{amount:"4",name:"hamburger buns",aisle:"Grains & Bread"},{amount:"4 slices",name:"American cheese",aisle:"Dairy & Eggs"},{amount:"4 large",name:"russet potatoes, cut into fries",aisle:"Produce"},{amount:"2 tbsp",name:"olive oil",aisle:"Pantry"},{amount:"1 tsp",name:"garlic powder",aisle:"Herbs & Spices"},{amount:"1/4 cup",name:"ketchup",aisle:"Pantry"}], steps:["Toss potato fries in olive oil, garlic powder, salt, and pepper; spread on a baking sheet.","Bake fries at 425°F for 25 min, flipping halfway through.","Divide beef into 4 patties; season generously with salt and pepper.","Cook patties in a hot skillet or on the grill 3–4 min per side.","Add cheese in the last minute; cover to melt.","Toast buns lightly; build burgers with your favorite toppings and serve with fries."] },
+  { id:8, name:"Swedish Meatballs with Egg Noodles", description:"Tender meatballs in a rich creamy gravy served over buttery egg noodles.", prepTime:"20 min", cookTime:"25 min", cookMins:25, cal:580, cost:16, ingredients:[{amount:"1.5 lbs",name:"ground beef",aisle:"Meat & Fish"},{amount:"12 oz",name:"egg noodles",aisle:"Grains & Bread"},{amount:"1/2 cup",name:"breadcrumbs",aisle:"Grains & Bread"},{amount:"1",name:"egg",aisle:"Dairy & Eggs"},{amount:"2 cups",name:"beef broth",aisle:"Pantry"},{amount:"1 cup",name:"sour cream",aisle:"Dairy & Eggs"},{amount:"3 tbsp",name:"butter",aisle:"Dairy & Eggs"},{amount:"3 tbsp",name:"flour",aisle:"Grains & Bread"},{amount:"1/4 tsp",name:"nutmeg",aisle:"Herbs & Spices"}], steps:["Mix ground beef, breadcrumbs, egg, nutmeg, salt, and pepper; roll into small meatballs.","Brown meatballs in butter in a large skillet, turning until cooked through, about 8 min. Set aside.","In the same skillet melt remaining butter; whisk in flour and cook 1 min.","Gradually add beef broth, whisking until smooth and thick.","Stir in sour cream; return meatballs to the pan and simmer 5 min.","Cook egg noodles per package; drain and toss with a little butter.","Serve meatballs and gravy over egg noodles."] },
+  { id:9, name:"Salmon with Couscous & Asparagus", description:"Pan-seared salmon over fluffy couscous with roasted asparagus on the side.", prepTime:"10 min", cookTime:"20 min", cookMins:20, cal:520, cost:24, ingredients:[{amount:"4",name:"salmon fillets",aisle:"Meat & Fish"},{amount:"1.5 cups",name:"couscous",aisle:"Grains & Bread"},{amount:"1 bunch",name:"asparagus, trimmed",aisle:"Produce"},{amount:"2 tbsp",name:"olive oil",aisle:"Pantry"},{amount:"2 tbsp",name:"butter",aisle:"Dairy & Eggs"},{amount:"1",name:"lemon",aisle:"Produce"},{amount:"1 tsp",name:"garlic powder",aisle:"Herbs & Spices"}], steps:["Toss asparagus in olive oil, salt, and pepper; roast at 400°F for 15 min.","Bring 1.5 cups salted water to a boil; stir in couscous, cover and remove from heat. Let sit 5 min then fluff with a fork.","Pat salmon dry; season with garlic powder, salt, and pepper.","Sear salmon in butter skin-side down over medium-high heat 4 min; flip and cook 3 more min.","Squeeze lemon over salmon before serving.","Plate couscous, top with salmon, and serve asparagus on the side."] },
+  { id:10, name:"Turkey Chili & Biscuits", description:"Hearty turkey chili with beans and warm fluffy biscuits for dipping.", prepTime:"15 min", cookTime:"30 min", cookMins:30, cal:510, cost:14, ingredients:[{amount:"1.5 lbs",name:"ground turkey",aisle:"Meat & Fish"},{amount:"2 cans",name:"kidney beans, drained",aisle:"Pantry"},{amount:"1 can",name:"diced tomatoes",aisle:"Pantry"},{amount:"1",name:"onion, diced",aisle:"Produce"},{amount:"2 tbsp",name:"chili powder",aisle:"Herbs & Spices"},{amount:"1 can (16oz)",name:"refrigerated biscuit dough",aisle:"Dairy & Eggs"},{amount:"1 cup",name:"shredded cheddar",aisle:"Dairy & Eggs"}], steps:["Brown ground turkey and onion in a large pot; drain any excess liquid.","Add kidney beans, diced tomatoes, chili powder, cumin, salt, and 1/2 cup water.","Simmer on medium-low for 20 min, stirring occasionally.","While chili simmers bake biscuits per package instructions until golden.","Ladle chili into bowls and top with shredded cheddar.","Serve with warm biscuits on the side for dipping."] },
+  { id:11, name:"Korean BBQ with Rice Noodles", description:"Sweet and savory Korean-style BBQ beef served over tender rice noodles.", prepTime:"15 min", cookTime:"20 min", cookMins:20, cal:540, cost:22, ingredients:[{amount:"1.5 lbs",name:"thinly sliced beef (ribeye or sirloin)",aisle:"Meat & Fish"},{amount:"8 oz",name:"rice noodles",aisle:"Grains & Bread"},{amount:"1/4 cup",name:"soy sauce",aisle:"Pantry"},{amount:"2 tbsp",name:"brown sugar",aisle:"Pantry"},{amount:"1 tbsp",name:"sesame oil",aisle:"Pantry"},{amount:"3 cloves",name:"garlic, minced",aisle:"Produce"},{amount:"3",name:"green onions, sliced",aisle:"Produce"},{amount:"1 tbsp",name:"sesame seeds",aisle:"Herbs & Spices"}], steps:["Mix soy sauce, brown sugar, sesame oil, and garlic into a marinade; toss with beef and let sit 10 min.","Soak rice noodles in hot water 8–10 min until tender; drain and toss with a little sesame oil.","Cook marinated beef in a hot skillet or grill pan 2–3 min per side until caramelized.","Plate noodles and top with beef.","Garnish with green onions and sesame seeds and serve."] },
+  { id:12, name:"Shrimp & Grits", description:"Creamy cheesy grits topped with seasoned shrimp and a buttery garlic sauce.", prepTime:"10 min", cookTime:"25 min", cookMins:25, cal:510, cost:26, ingredients:[{amount:"1.5 lbs",name:"large shrimp, peeled and deveined",aisle:"Meat & Fish"},{amount:"1 cup",name:"quick-cooking grits",aisle:"Grains & Bread"},{amount:"2 cups",name:"shredded cheddar",aisle:"Dairy & Eggs"},{amount:"4 tbsp",name:"butter",aisle:"Dairy & Eggs"},{amount:"3 cloves",name:"garlic, minced",aisle:"Produce"},{amount:"1/2 cup",name:"chicken broth",aisle:"Pantry"},{amount:"1 tsp",name:"smoked paprika",aisle:"Herbs & Spices"},{amount:"3",name:"green onions, sliced",aisle:"Produce"}], steps:["Cook grits per package instructions using salted water.","Stir in cheddar and 2 tbsp butter until melted and creamy; season with salt and pepper.","Season shrimp with smoked paprika, salt, and pepper.","Melt remaining butter in a skillet over medium-high; add garlic and cook 1 min.","Add shrimp and cook 2 min per side until pink; pour in chicken broth and simmer 2 min.","Spoon grits into bowls, top with shrimp and pan sauce, and garnish with green onions."] },
+  { id:13, name:"Beef Tacos with Spanish Rice & Black Beans", description:"Seasoned ground beef in crispy hard shells with Spanish rice and black beans on the side.", prepTime:"15 min", cookTime:"25 min", cookMins:25, cal:550, cost:14, ingredients:[{amount:"1.5 lbs",name:"ground beef",aisle:"Meat & Fish"},{amount:"8",name:"hard taco shells",aisle:"Grains & Bread"},{amount:"1 packet",name:"taco seasoning",aisle:"Herbs & Spices"},{amount:"1 can",name:"black beans, drained",aisle:"Pantry"},{amount:"1.5 cups",name:"long grain white rice",aisle:"Grains & Bread"},{amount:"1 can",name:"diced tomatoes with green chiles",aisle:"Pantry"},{amount:"1 cup",name:"shredded cheddar",aisle:"Dairy & Eggs"},{amount:"1/2 cup",name:"sour cream",aisle:"Dairy & Eggs"},{amount:"1 tsp",name:"cumin",aisle:"Herbs & Spices"}], steps:["Cook rice in chicken broth with diced tomatoes and cumin for Spanish rice — follow package timing.","Brown ground beef in a skillet; drain fat. Add taco seasoning and 1/4 cup water; simmer 3 min.","Warm black beans in a small pot with a pinch of cumin and salt.","Warm taco shells in the oven at 350°F for 5 min.","Set out toppings: cheddar, sour cream, salsa, shredded lettuce.","Fill shells with beef and let everyone top their own; serve with Spanish rice and black beans on the side."] },
+  { id:14, name:"Breakfast for Dinner", description:"Fluffy pancakes, savory sausage links, and crispy skillet potatoes — kids go crazy for this one.", prepTime:"10 min", cookTime:"25 min", cookMins:25, cal:580, cost:12, ingredients:[{amount:"2 cups",name:"pancake mix",aisle:"Grains & Bread"},{amount:"1 1/2 cups",name:"milk",aisle:"Dairy & Eggs"},{amount:"2",name:"eggs",aisle:"Dairy & Eggs"},{amount:"1 lb",name:"breakfast sausage links",aisle:"Meat & Fish"},{amount:"1.5 lbs",name:"potatoes, diced",aisle:"Produce"},{amount:"2 tbsp",name:"butter",aisle:"Dairy & Eggs"},{amount:"1 tbsp",name:"olive oil",aisle:"Pantry"},{amount:"1/2 cup",name:"maple syrup",aisle:"Pantry"},{amount:"1 tsp",name:"garlic powder",aisle:"Herbs & Spices"}], steps:["Cook diced potatoes in olive oil in a skillet over medium-high heat, seasoning with garlic powder, salt, and pepper; cook 15–18 min, stirring occasionally, until golden and crispy.","Cook sausage links in a separate skillet over medium heat, turning until browned all over, about 10 min.","Mix pancake mix, milk, and eggs until just combined — lumps are fine.","Heat a buttered griddle over medium; pour 1/4 cup batter per pancake.","Cook until bubbles form on the surface (2–3 min); flip and cook 1 more min.","Serve pancakes stacked with sausage links and crispy potatoes; top with maple syrup and butter."] },
+  { id:15, name:"Chicken Tortilla Soup", description:"Hearty chicken soup with beans, corn, and tomatoes topped with crunchy tortilla strips.", prepTime:"10 min", cookTime:"30 min", cookMins:30, cal:480, cost:14, ingredients:[{amount:"1.5 lbs",name:"chicken breast",aisle:"Meat & Fish"},{amount:"1 can",name:"black beans, drained",aisle:"Pantry"},{amount:"1 can",name:"corn, drained",aisle:"Pantry"},{amount:"1 can",name:"diced tomatoes with green chiles",aisle:"Pantry"},{amount:"4 cups",name:"chicken broth",aisle:"Pantry"},{amount:"1 tsp",name:"cumin",aisle:"Herbs & Spices"},{amount:"1 tsp",name:"chili powder",aisle:"Herbs & Spices"},{amount:"1 cup",name:"shredded cheddar",aisle:"Dairy & Eggs"},{amount:"1/2 cup",name:"sour cream",aisle:"Dairy & Eggs"},{amount:"1 bag",name:"tortilla strips or crushed tortilla chips",aisle:"Pantry"}], steps:["Place chicken breasts in a large pot with chicken broth, cumin, and chili powder; bring to a boil.","Reduce heat and simmer 15 min until chicken is cooked through; remove and shred with two forks.","Return shredded chicken to the pot; add black beans, corn, and diced tomatoes.","Simmer 10 more min until everything is heated through; season with salt and pepper.","Ladle into bowls and top with shredded cheddar, sour cream, and tortilla strips."] },
+  { id:16, name:"Veggie Stir Fry with Rice", description:"Colorful vegetables tossed in a savory garlic-soy sauce served over steamed rice.", prepTime:"15 min", cookTime:"15 min", cookMins:15, cal:380, cost:10, ingredients:[{amount:"1.5 cups",name:"long grain white rice",aisle:"Grains & Bread"},{amount:"2 cups",name:"broccoli florets",aisle:"Produce"},{amount:"2",name:"bell peppers, sliced",aisle:"Produce"},{amount:"2",name:"carrots, sliced thin",aisle:"Produce"},{amount:"1 cup",name:"snap peas",aisle:"Produce"},{amount:"3 tbsp",name:"soy sauce",aisle:"Pantry"},{amount:"1 tbsp",name:"sesame oil",aisle:"Pantry"},{amount:"3 cloves",name:"garlic, minced",aisle:"Produce"},{amount:"1 tbsp",name:"olive oil",aisle:"Pantry"}], steps:["Cook rice per package instructions.","Heat olive oil in a large skillet or wok over high heat.","Add carrots and broccoli first; stir fry 3 min.","Add bell peppers, snap peas, and garlic; stir fry 3 more min.","Pour in soy sauce and sesame oil; toss everything together and cook 1 min.","Serve over steamed rice."] },
+  { id:17, name:"Mongolian Beef with White Rice", description:"Tender sliced beef in a sweet and savory sauce over fluffy white rice.", prepTime:"15 min", cookTime:"20 min", cookMins:20, cal:540, cost:20, ingredients:[{amount:"1.5 lbs",name:"flank steak, sliced thin",aisle:"Meat & Fish"},{amount:"1.5 cups",name:"long grain white rice",aisle:"Grains & Bread"},{amount:"1/4 cup",name:"soy sauce",aisle:"Pantry"},{amount:"3 tbsp",name:"brown sugar",aisle:"Pantry"},{amount:"1 tbsp",name:"sesame oil",aisle:"Pantry"},{amount:"3 cloves",name:"garlic, minced",aisle:"Produce"},{amount:"1 tsp",name:"fresh ginger, grated",aisle:"Produce"},{amount:"3",name:"green onions, sliced",aisle:"Produce"},{amount:"2 tbsp",name:"cornstarch",aisle:"Pantry"}], steps:["Cook rice per package instructions.","Toss sliced beef in cornstarch until lightly coated.","Mix soy sauce, brown sugar, sesame oil, garlic, and ginger into a sauce.","Sear beef in a hot oiled skillet over high heat 2–3 min until browned; do in batches.","Pour sauce over beef; toss and simmer 2 min until thick and glossy.","Serve over white rice and top with sliced green onions."] },
+  { id:18, name:"Sushi & Ramen Night", description:"Store-bought sushi rolls paired with a quick homemade ramen — easy and fun for the whole family.", prepTime:"10 min", cookTime:"15 min", cookMins:15, cal:490, cost:24, ingredients:[{amount:"2 packs",name:"store-bought sushi rolls (your family's favorites)",aisle:"Meat & Fish"},{amount:"4 packs",name:"ramen noodles",aisle:"Grains & Bread"},{amount:"4 cups",name:"chicken broth",aisle:"Pantry"},{amount:"4",name:"eggs",aisle:"Dairy & Eggs"},{amount:"1 cup",name:"corn kernels",aisle:"Frozen"},{amount:"3",name:"green onions, sliced",aisle:"Produce"},{amount:"2 tbsp",name:"soy sauce",aisle:"Pantry"},{amount:"1 tsp",name:"sesame oil",aisle:"Pantry"}], steps:["Soft boil eggs: simmer in water 7 min then transfer to ice water; peel and halve.","Bring chicken broth to a simmer; add soy sauce and sesame oil.","Cook ramen noodles in the broth per package instructions; discard seasoning packets.","Warm corn in the microwave or in a small pot.","Divide noodles and broth into bowls; top with halved eggs, corn, and green onions.","Serve with store-bought sushi rolls on the side."] },
+  { id:19, name:"Chicken Shawarma with Naan & Yellow Rice", description:"Spiced chicken shawarma with warm naan, fluffy yellow rice, and creamy garlic sauce.", prepTime:"15 min", cookTime:"25 min", cookMins:25, cal:560, cost:18, ingredients:[{amount:"2 lbs",name:"chicken thighs, boneless",aisle:"Meat & Fish"},{amount:"4",name:"naan breads",aisle:"Grains & Bread"},{amount:"1.5 cups",name:"long grain white rice",aisle:"Grains & Bread"},{amount:"1 tsp",name:"turmeric",aisle:"Herbs & Spices"},{amount:"2 tsp",name:"shawarma seasoning or cumin and paprika",aisle:"Herbs & Spices"},{amount:"1 cup",name:"plain Greek yogurt",aisle:"Dairy & Eggs"},{amount:"4 cloves",name:"garlic, minced",aisle:"Produce"},{amount:"2 tbsp",name:"lemon juice",aisle:"Produce"},{amount:"2 tbsp",name:"olive oil",aisle:"Pantry"}], steps:["Cook rice with turmeric and a pinch of salt for yellow rice — follow package timing.","Mix shawarma seasoning, olive oil, and lemon juice; toss with chicken to coat.","Cook chicken in a hot skillet over medium-high heat 5–6 min per side until cooked through; rest 5 min then slice thin.","Make garlic sauce: mix Greek yogurt, minced garlic, lemon juice, and a pinch of salt.","Warm naan in a dry skillet or oven for 2 min.","Serve sliced chicken over yellow rice with warm naan and garlic sauce on the side."] },
+  { id:20, name:"Beef Enchiladas", description:"Seasoned ground beef rolled in corn tortillas, smothered in red enchilada sauce and melted cheese.", prepTime:"20 min", cookTime:"30 min", cookMins:30, cal:560, cost:16, ingredients:[{amount:"1.5 lbs",name:"ground beef",aisle:"Meat & Fish"},{amount:"8",name:"corn tortillas",aisle:"Grains & Bread"},{amount:"1 can (28oz)",name:"red enchilada sauce",aisle:"Pantry"},{amount:"2 cups",name:"shredded Mexican cheese blend",aisle:"Dairy & Eggs"},{amount:"1",name:"onion, diced",aisle:"Produce"},{amount:"1 packet",name:"taco seasoning",aisle:"Herbs & Spices"},{amount:"1/2 cup",name:"sour cream",aisle:"Dairy & Eggs"}], steps:["Brown ground beef and onion in a skillet; drain fat. Add taco seasoning and 1/4 cup water; simmer 3 min.","Pour a thin layer of enchilada sauce on the bottom of a 9x13 baking dish.","Warm tortillas in a dry skillet or microwave so they don't crack when rolling.","Fill each tortilla with beef mixture and a sprinkle of cheese; roll tightly and place seam-side down in the dish.","Pour remaining enchilada sauce over the top; sprinkle with remaining cheese.","Bake at 375°F for 20–25 min until cheese is bubbly and golden. Serve with sour cream."] },
+  { id:21, name:"Shepherd's Pie with Tater Tot Topping", description:"Hearty ground beef and veggie filling topped with crispy golden tater tots instead of mashed potatoes.", prepTime:"15 min", cookTime:"35 min", cookMins:35, cal:570, cost:12, ingredients:[{amount:"1.5 lbs",name:"ground beef",aisle:"Meat & Fish"},{amount:"1 bag (32oz)",name:"frozen tater tots",aisle:"Frozen"},{amount:"1 cup",name:"frozen peas and carrots",aisle:"Frozen"},{amount:"1 can",name:"cream of mushroom soup",aisle:"Pantry"},{amount:"1",name:"onion, diced",aisle:"Produce"},{amount:"1 cup",name:"beef broth",aisle:"Pantry"},{amount:"1 cup",name:"shredded cheddar",aisle:"Dairy & Eggs"},{amount:"1 tsp",name:"garlic powder",aisle:"Herbs & Spices"}], steps:["Preheat oven to 400°F.","Brown ground beef and onion in an oven-safe skillet; drain fat.","Stir in cream of mushroom soup, beef broth, peas and carrots, and garlic powder; simmer 5 min.","Sprinkle cheddar over the beef mixture.","Arrange frozen tater tots in a single layer on top.","Bake 25–30 min until tater tots are golden and crispy and filling is bubbling."] },
+];
+
+    const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+    const AISLES = ["Produce","Meat & Fish","Dairy & Eggs","Frozen","Grains & Bread","Pantry","Herbs & Spices"];
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function makePlan(meals) {
+      const picked = [];
+      const used = new Set();
+      const pool = shuffle(meals);
+      for (const m of pool) {
+        if (picked.length === 7) break;
+        if (used.has(m.id)) continue;
+        picked.push({ ...m, day: DAYS[picked.length], note: "" });
+        used.add(m.id);
+      }
+      return picked;
+    }
+
+    function makeList(plan, people) {
+      const ratio = people / 4;
+      const byAisle = {};
+      AISLES.forEach(a => { byAisle[a] = []; });
+      const seen = new Set();
+      for (const day of plan) {
+        for (const ing of (day.ingredients || [])) {
+          const key = ing.name.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          const aisle = ing.aisle || "Pantry";
+          const qty = ratio === 1 ? ing.amount : ing.amount.replace(/[\d.]+/, n => Math.round(parseFloat(n) * ratio * 4) / 4);
+          if (!byAisle[aisle]) byAisle[aisle] = [];
+          byAisle[aisle].push({ name: ing.name, qty });
+        }
+      }
+      return byAisle;
+    }
+
+    // ── STATE ──────────────────────────────────────────────────────────
+    let state = {
+      people: 4,
+      tab: "library",
+      plan: [],
+      list: {},
+      approved: {},
+      skipped: {},
+      checked: {},
+      modal: null,
+      pickIdx: null,
+      shareView: false,
+      favs: [],
+      removed: [],
+      custom: [],
+      search: "",
+      showForm: false,
+      form: { name:"", desc:"", prep:"", cook:"", cal:"", cost:"", ings:"", steps:"" },
+      ferr: "",
+      copied: false,
+      weekDate: "",
+    };
+
+    function setState(updates) {
+      state = { ...state, ...updates };
+      render();
+    }
+
+    // ── LOGIC ──────────────────────────────────────────────────────────
+    function getPool() {
+      return [...MEAL_DB, ...state.custom].filter(m => !state.removed.includes(m.id));
+    }
+
+    function generate() {
+      const pool = getPool();
+      if (pool.length < 1) { alert("Add meals to your library first!"); return; }
+      const weighted = [];
+      for (const m of pool) {
+        weighted.push(m);
+        if (state.favs.includes(m.id)) { weighted.push(m); weighted.push(m); }
+      }
+      const result = makePlan(weighted);
+      const d = new Date();
+      const day = d.getDay();
+      const mon = new Date(d);
+      mon.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+      const weekDate = mon.toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
+      setState({ plan: result, list: makeList(result, state.people), approved: {}, skipped: {}, checked: {}, modal: null, tab: "plan", weekDate });
+    }
+
+    function swap(idx) {
+      const pool = getPool();
+      const inUse = state.plan.filter((_, i) => i !== idx).map(m => m.id);
+      const currentId = state.plan[idx] ? state.plan[idx].id : -1;
+      const available = pool.filter(m => !inUse.includes(m.id) && m.id !== currentId);
+      if (available.length === 0) { alert("No other meals available — add more recipes!"); return; }
+      const pick = available[Math.floor(Math.random() * available.length)];
+      const newPlan = state.plan.map((m, i) => i === idx ? { ...pick, day: m.day, note: "" } : m);
+      const newApproved = { ...state.approved };
+      delete newApproved[idx];
+      setState({ plan: newPlan, list: makeList(newPlan.filter((_, i) => !state.skipped[i]), state.people), approved: newApproved });
+    }
+
+    function pickMeal(slotIdx, mealId) {
+      const pick = [...MEAL_DB, ...state.custom].find(m => m.id === mealId);
+      if (!pick) return;
+      const newPlan = state.plan.map((m, i) => i === slotIdx ? { ...pick, day: m.day, note: "" } : m);
+      const newApproved = { ...state.approved };
+      delete newApproved[slotIdx];
+      setState({ plan: newPlan, list: makeList(newPlan.filter((_, i) => !state.skipped[i]), state.people), approved: newApproved, pickIdx: null });
+    }
+
+    function toggleSkip(idx) {
+      const newSkipped = { ...state.skipped, [idx]: !state.skipped[idx] };
+      const newApproved = { ...state.approved };
+      delete newApproved[idx];
+      setState({ skipped: newSkipped, approved: newApproved, list: makeList(state.plan.filter((_, i) => !newSkipped[i]), state.people) });
+    }
+
+    function toggleFav(id) {
+      const favs = state.favs.includes(id) ? state.favs.filter(x => x !== id) : [...state.favs, id];
+      setState({ favs });
+    }
+
+    function toggleRemove(id, isCustom) {
+      if (isCustom) { setState({ custom: state.custom.filter(m => m.id !== id) }); return; }
+      const removed = state.removed.includes(id) ? state.removed.filter(x => x !== id) : [...state.removed, id];
+      setState({ removed });
+    }
+
+    function saveForm() {
+      if (!state.form.name.trim()) { setState({ ferr: "Name is required." }); return; }
+      const ingredients = state.form.ings.split("\n").filter(l => l.trim()).map(line => {
+        const parts = line.trim().match(/^(\S+(?:\s+\S+)?)\s+(.+)$/);
+        if (parts && /[\d\/]/.test(parts[1])) return { amount: parts[1], name: parts[2], aisle: "Pantry" };
+        return { amount: "", name: line.trim(), aisle: "Pantry" };
+      });
+      const steps = state.form.steps.split("\n").filter(l => l.trim());
+      const r = {
+        id: Date.now(), name: state.form.name.trim(), description: state.form.desc.trim() || state.form.name.trim(),
+        prepTime: state.form.prep || "?", cookTime: state.form.cook || "?", cookMins: 30,
+        cal: parseInt(state.form.cal) || 400, cost: parseFloat(state.form.cost) || 12,
+        ingredients, steps, isCustom: true
+      };
+      setState({ custom: [...state.custom, r], form: { name:"", desc:"", prep:"", cook:"", cal:"", cost:"", ings:"", steps:"" }, showForm: false, ferr: "" });
+    }
+
+    function copyList() {
+      let txt = "SHOPPING LIST\n\n";
+      AISLES.forEach(a => {
+        const items = state.list[a]; if (!items?.length) return;
+        txt += a.toUpperCase() + "\n";
+        items.forEach((item, i) => { if (!state.checked[a+"-"+i]) txt += "  • " + item.name + " — " + item.qty + "\n"; });
+        txt += "\n";
+      });
+      navigator.clipboard.writeText(txt).then(() => { setState({ copied: true }); setTimeout(() => setState({ copied: false }), 2000); });
+    }
+
+    function updateNote(idx, val) {
+      const newPlan = state.plan.map((m, i) => i === idx ? { ...m, note: val } : m);
+      setState({ plan: newPlan });
+    }
+
+    function updateForm(key, val) {
+      setState({ form: { ...state.form, [key]: val } });
+    }
+
+    // ── RENDER ─────────────────────────────────────────────────────────
+    function h(tag, attrs, ...children) {
+      const el = document.createElement(tag);
+      if (attrs) {
+        for (const [k, v] of Object.entries(attrs)) {
+          if (k === "className") el.className = v;
+          else if (k === "style" && typeof v === "object") Object.assign(el.style, v);
+          else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
+          else if (k === "value" && (tag === "input" || tag === "textarea" || tag === "select")) el.value = v;
+          else if (k === "rows") el.rows = v;
+          else if (k === "placeholder") el.placeholder = v;
+          else if (k === "disabled") { if (v) el.disabled = true; }
+          else if (k === "type") el.type = v;
+          else el.setAttribute(k, v);
+        }
+      }
+      for (const child of children.flat()) {
+        if (child === null || child === undefined) continue;
+        if (typeof child === "string" || typeof child === "number") el.appendChild(document.createTextNode(String(child)));
+        else el.appendChild(child);
+      }
+      return el;
+    }
+
+    function text(str) { return document.createTextNode(String(str || "")); }
+
+    function render() {
+      const root = document.getElementById("root");
+      root.innerHTML = "";
+
+      const ratio = state.people / 4;
+      const needed = state.plan.filter((_, i) => !state.skipped[i]).length;
+      const readyCount = state.plan.filter((_, i) => !state.skipped[i] && state.approved[i]).length;
+      const allReady = needed > 0 && readyCount === needed;
+      const weekCost = state.plan.reduce((s, m, i) => state.skipped[i] ? s : s + Math.round((m.cost || 12) * ratio), 0);
+      const skippedCount = Object.values(state.skipped).filter(Boolean).length;
+
+      // SHARE VIEW
+      if (state.shareView && state.plan.length > 0) {
+        const page = h("div", { className: "share-page" },
+          h("div", { className: "share-hdr" },
+            h("h2", {}, "Week of ", h("em", {}, state.weekDate)),
+            h("div", { style: { display:"flex", gap:"8px" } },
+              h("button", { className: "btn-sm", onClick: () => setState({ shareView: false }) }, "← Edit"),
+              h("button", { className: "btn-sm", style: { borderColor:"#c8a96e", color:"#c8a96e" }, onClick: () => window.print() }, "🖨 Print")
+            )
+          ),
+          h("div", { className: "share-body" },
+            h("div", { className: "share-sec" }, "Dinner Plan"),
+            ...state.plan.map((m, i) => {
+              if (state.skipped[i]) return null;
+              return h("div", { className: "share-card" },
+                h("div", { className: "share-day" }, m.day),
+                h("div", { className: "share-name" }, m.name),
+                h("div", { className: "share-desc" }, m.description),
+                m.note ? h("div", { className: "share-note" }, "📌 " + m.note) : null,
+                h("div", { className: "share-meta" },
+                  h("span", {}, h("b", {}, "Prep "), m.prepTime),
+                  h("span", {}, h("b", {}, "Cook "), m.cookTime),
+                  h("span", {}, h("b", {}, "~$" + Math.round((m.cost||12)*ratio)), " est.")
+                ),
+                h("div", { className: "slbl" }, "Ingredients"),
+                ...m.ingredients.map(ing => h("div", { className: "ing-row" },
+                  h("span", { className: "ing-amt" }, ratio!==1 ? ing.amount.replace(/[\d.]+/, n => Math.round(parseFloat(n)*ratio*4)/4) : ing.amount),
+                  h("span", { className: "ing-name" }, ing.name)
+                )),
+                h("div", { className: "slbl" }, "Instructions"),
+                ...m.steps.map((s, j) => h("div", { className: "step-row" },
+                  h("div", { className: "step-n" }, j+1),
+                  h("div", { className: "step-t" }, s)
+                ))
+              );
+            }).filter(Boolean),
+            h("div", { className: "share-sec" }, "Shopping List"),
+            h("div", { className: "share-shop" },
+              ...AISLES.map(a => {
+                const items = state.list[a]; if (!items?.length) return null;
+                return h("div", { className: "share-cat" },
+                  h("div", { className: "share-cat-title" }, a),
+                  ...items.map(item => h("div", { className: "share-item" },
+                    h("span", { className: "share-qty" }, item.qty),
+                    text(item.name)
+                  ))
+                );
+              }).filter(Boolean)
+            )
+          )
+        );
+        root.appendChild(page);
+        return;
+      }
+
+      // MAIN APP
+      const app = h("div", { className: "wrap" },
+        h("h1", {}, "Family ", h("span", {}, "Meal"), " Planner"),
+        h("p", { className: "sub" }, state.weekDate ? "Week of " + state.weekDate : "Build your week, approve, and share"),
+
+        // Controls
+        h("div", { className: "row" },
+          h("select", { value: state.people, onChange: e => setState({ people: Number(e.target.value) }) },
+            ...[1,2,3,4,5,6].map(n => {
+              const opt = document.createElement("option");
+              opt.value = n; opt.textContent = n + " " + (n===1?"person":"people");
+              if (n === state.people) opt.selected = true;
+              return opt;
+            })
+          ),
+          h("button", { className: "btn", onClick: generate }, state.plan.length ? "Regenerate" : "Generate Plan")
+        ),
+
+        // Tabs
+        h("div", { className: "tabs" },
+          ...(state.plan.length > 0 ? [
+            h("button", { className: "tab" + (state.tab==="plan"?" on":""), onClick: () => setState({ tab:"plan" }) }, "Meal Plan"),
+            h("button", { className: "tab" + (state.tab==="shopping"?" on":""), onClick: () => setState({ tab:"shopping" }) }, "Shopping"),
+          ] : []),
+          h("button", { className: "tab" + (state.tab==="library"?" on":""), onClick: () => setState({ tab:"library", showForm: false }) }, "Library")
+        ),
+
+        // PLAN TAB
+        ...(state.tab === "plan" && state.plan.length > 0 ? [
+          h("div", { className: "grid" },
+            ...state.plan.map((meal, i) =>
+              h("div", { className: "card" + (state.approved[i]?" approved":"") + (state.skipped[i]?" skipped":"") },
+                h("div", { className: "card-top" },
+                  h("span", {}, meal.day + (state.approved[i]?" ✓":"") + (state.skipped[i]?" — Out":"")),
+                  h("span", { style: { cursor:"pointer", opacity: state.favs.includes(meal.id)?1:0.3 }, onClick: () => toggleFav(meal.id) }, "⭐")
+                ),
+                h("div", { className: "card-body" },
+                  ...(state.skipped[i] ? [
+                    h("div", { style: { textAlign:"center", padding:"18px 0", color:"#8a4040", fontSize:"0.88rem" } },
+                      "🚫 Not home this night",
+                      h("br", {}),
+                      h("span", { style: { fontSize:"0.75rem", color:"#664040" } }, "Removed from shopping list")
+                    )
+                  ] : [
+                    h("div", { className: "meal-name" }, meal.name),
+                    h("div", { className: "meal-desc" }, meal.description),
+                    h("div", { className: "meal-info" },
+                      h("span", {}, h("b", {}, "Prep "), meal.prepTime),
+                      h("span", {}, h("b", {}, "Cook "), meal.cookTime),
+                      h("span", {}, h("b", {}, "~$" + Math.round((meal.cost||12)*ratio)))
+                    ),
+                    (() => {
+                      const ta = document.createElement("textarea");
+                      ta.className = ""; ta.rows = 1; ta.placeholder = "Add a note…";
+                      ta.value = meal.note || "";
+                      ta.addEventListener("input", e => updateNote(i, e.target.value));
+                      ta.style.cssText = "width:100%;background:#111;border:1px solid #222;color:#ccc;padding:7px 10px;border-radius:6px;font-size:0.82rem;resize:none;font-family:inherit;margin-bottom:8px;";
+                      return ta;
+                    })(),
+                    h("div", { className: "card-btns" },
+                      h("button", { className: "btn-sm", style:{flex:1}, onClick: () => setState({ modal: i }) }, "View Recipe"),
+                      h("button", { className: "btn-sm btn-green" + (state.approved[i]?" on":""), style:{flex:1}, onClick: () => setState({ approved: {...state.approved, [i]: !state.approved[i]} }) },
+                        state.approved[i] ? "✓ Approved" : "Approve"
+                      )
+                    ),
+                    h("div", { style:{display:"flex",gap:6,marginBottom:6} },
+                      h("button", { className: "btn-sm", style:{flex:1}, onClick: () => swap(i) }, "↺ Random"),
+                      h("button", { className: "btn-sm", style:{flex:1,borderColor:"#c8a96e",color:"#c8a96e"}, onClick: () => setState({ pickIdx: i }) }, "📋 Choose")
+                    )
+                  ]),
+                  h("button", { className: "btn-sm btn-red" + (state.skipped[i]?" on":""), style:{width:"100%"}, onClick: () => toggleSkip(i) },
+                    state.skipped[i] ? "↩ We're home — add meal" : "🚫 Not home tonight"
+                  )
+                )
+              )
+            )
+          ),
+          h("div", { className: "bar" },
+            h("div", {},
+              h("p", {}, h("strong", {}, "Approve each meal"), " to unlock sharing."),
+              h("p", { className: "prog" },
+                h("span", {}, readyCount + "/" + needed), " approved",
+                skippedCount > 0 ? " · " + skippedCount + " night" + (skippedCount>1?"s":"") + " out" : "",
+                " · Est. ~$" + weekCost
+              )
+            ),
+            h("button", { className: "btn", disabled: !allReady, style:{opacity:allReady?1:0.4,cursor:allReady?"pointer":"not-allowed"}, onClick: () => setState({ shareView: true }) },
+              allReady ? "📋 View & Share" : readyCount + "/" + needed + " Approved"
+            )
+          )
+        ] : []),
+
+        // SHOPPING TAB
+        ...(state.tab === "shopping" && state.plan.length > 0 ? [
+          h("div", { className: "shop-head" },
+            h("h2", {}, "Shopping List"),
+            h("button", { className: "btn-sm", onClick: copyList }, state.copied ? "✓ Copied!" : "Copy")
+          ),
+          ...AISLES.map(a => {
+            const items = state.list[a]; if (!items?.length) return null;
+            return h("div", { className: "aisle" },
+              h("div", { className: "aisle-title" }, a),
+              ...items.map((item, idx) => {
+                const k = a + "-" + idx;
+                return h("div", { className: "shop-row" + (state.checked[k]?" done":"") },
+                  h("div", { className: "chk" + (state.checked[k]?" on":""), onClick: () => setState({ checked: {...state.checked, [k]: !state.checked[k]} }) },
+                    state.checked[k] ? h("span", {}, "✓") : null
+                  ),
+                  h("span", { className: "item-name" }, item.name),
+                  h("span", { className: "item-qty" }, item.qty)
+                );
+              })
+            );
+          }).filter(Boolean)
+        ] : []),
+
+        // LIBRARY TAB
+        ...(state.tab === "library" ? [
+          h("button", { className: "btn-sm", style:{width:"100%",marginBottom:12,padding:"10px"}, onClick: () => setState({ showForm: !state.showForm }) },
+            state.showForm ? "✕ Cancel" : "+ Add your own recipe"
+          ),
+          ...(state.showForm ? [
+            h("div", { className: "form-box" },
+              h("h3", {}, "Add Recipe"),
+              h("div", { className: "field" }, h("label", {}, "Name *"), (() => { const i = document.createElement("input"); i.value = state.form.name; i.placeholder = "e.g. Chicken Stir Fry"; i.addEventListener("input", e => updateForm("name", e.target.value)); return i; })()),
+              h("div", { className: "field-row" },
+                h("div", { className: "field" }, h("label", {}, "Prep"), (() => { const i = document.createElement("input"); i.value = state.form.prep; i.placeholder = "15 min"; i.addEventListener("input", e => updateForm("prep", e.target.value)); return i; })()),
+                h("div", { className: "field" }, h("label", {}, "Cook"), (() => { const i = document.createElement("input"); i.value = state.form.cook; i.placeholder = "30 min"; i.addEventListener("input", e => updateForm("cook", e.target.value)); return i; })())
+              ),
+              h("div", { className: "field-row" },
+                h("div", { className: "field" }, h("label", {}, "Cal/serving"), (() => { const i = document.createElement("input"); i.type="number"; i.value = state.form.cal; i.placeholder = "450"; i.addEventListener("input", e => updateForm("cal", e.target.value)); return i; })()),
+                h("div", { className: "field" }, h("label", {}, "Est. Cost $"), (() => { const i = document.createElement("input"); i.type="number"; i.value = state.form.cost; i.placeholder = "12"; i.addEventListener("input", e => updateForm("cost", e.target.value)); return i; })())
+              ),
+              h("div", { className: "field" }, h("label", {}, "Description"), (() => { const i = document.createElement("input"); i.value = state.form.desc; i.placeholder = "One line about the dish"; i.addEventListener("input", e => updateForm("desc", e.target.value)); return i; })()),
+              h("div", { className: "field" },
+                h("label", {}, "Ingredients *"),
+                (() => { const ta = document.createElement("textarea"); ta.rows=4; ta.value=state.form.ings; ta.placeholder="One per line, amount first:\n2 cups flour\n1 tsp salt"; ta.addEventListener("input", e => updateForm("ings", e.target.value)); ta.style.cssText="width:100%;background:#111;border:1px solid #333;color:#f0ebe0;padding:9px 11px;border-radius:7px;font-size:0.88rem;resize:vertical;font-family:inherit;"; return ta; })(),
+                h("span", { className: "field-hint" }, "One per line — amount first")
+              ),
+              h("div", { className: "field" },
+                h("label", {}, "Steps *"),
+                (() => { const ta = document.createElement("textarea"); ta.rows=4; ta.value=state.form.steps; ta.placeholder="One per line:\nPreheat oven to 375F."; ta.addEventListener("input", e => updateForm("steps", e.target.value)); ta.style.cssText="width:100%;background:#111;border:1px solid #333;color:#f0ebe0;padding:9px 11px;border-radius:7px;font-size:0.88rem;resize:vertical;font-family:inherit;"; return ta; })()
+              ),
+              state.ferr ? h("div", { className: "ferr" }, state.ferr) : null,
+              h("div", { style:{display:"flex",gap:8,marginTop:12} },
+                h("button", { className: "btn", onClick: saveForm }, "Save Recipe"),
+                h("button", { className: "btn-sm", onClick: () => setState({ showForm: false }) }, "Cancel")
+              )
+            )
+          ] : []),
+          (() => {
+            const si = document.createElement("input");
+            si.className = "lib-search"; si.placeholder = "Search recipes…"; si.value = state.search;
+            si.addEventListener("input", e => setState({ search: e.target.value }));
+            return si;
+          })(),
+          (() => {
+            const all = [...MEAL_DB.map(m=>({...m,isCustom:false})), ...state.custom.map(m=>({...m,isCustom:true}))];
+            const visible = all.filter(m => !state.search || m.name.toLowerCase().includes(state.search.toLowerCase()));
+            const activeCount = all.filter(m => !state.removed.includes(m.id)).length;
+            return h("div", {},
+              h("div", { className: "lib-count" }, activeCount + " in pool · " + state.removed.length + " removed · " + all.length + " total"),
+              ...visible.map(r => {
+                const isDel = state.removed.includes(r.id);
+                const isFav = state.favs.includes(r.id);
+                return h("div", { className: "rrow" + (isDel?" del":"") },
+                  h("div", {},
+                    h("div", { className: "rname" }, r.name + (r.isCustom?" ★":"")),
+                    h("div", { className: "rmeta" }, r.prepTime + " prep · " + r.cookTime + " cook · ~$" + (r.cost||12) + "/meal" + (isFav?" ⭐":""))
+                  ),
+                  h("div", { className: "rbtns" },
+                    h("button", { className: "btn-sm" + (isFav?" ":" "), style: isFav?{borderColor:"#c8a96e",color:"#c8a96e"}:{}, onClick: () => toggleFav(r.id) }, isFav?"⭐":"☆ Fav"),
+                    isDel
+                      ? h("button", { className: "btn-sm btn-green", onClick: () => toggleRemove(r.id, r.isCustom) }, "Restore")
+                      : h("button", { className: "btn-sm btn-red", onClick: () => toggleRemove(r.id, r.isCustom) }, "Remove")
+                  )
+                );
+              })
+            );
+          })()
+        ] : [])
+      );
+
+      root.appendChild(app);
+
+      // PICK MODAL
+      if (state.pickIdx !== null) {
+        const slot = state.plan[state.pickIdx];
+        const all = [...MEAL_DB, ...state.custom].filter(m => !state.removed.includes(m.id));
+        const overlay = h("div", { className: "modal-bg", onClick: () => setState({ pickIdx: null }) },
+          h("div", { className: "modal", onClick: e => e.stopPropagation() },
+            h("button", { className: "close-btn", onClick: () => setState({ pickIdx: null }) }, "✕"),
+            h("div", { className: "modal-day" }, "Choose meal for " + (slot?.day||"")),
+            h("h2", {}, "Pick a Meal"),
+            h("p", { style:{fontSize:"0.82rem",color:"#666",margin:"8px 0 14px"} }, "Tap any meal to assign it."),
+            ...all.map(m => {
+              const isCurrent = slot?.id === m.id;
+              const isUsed = state.plan.some((p, i) => i !== state.pickIdx && p.id === m.id);
+              return h("div", { className: "pick-row" + (isCurrent?" current":""), onClick: () => !isCurrent && pickMeal(state.pickIdx, m.id) },
+                h("div", { className: "pick-row-info" },
+                  h("div", { className: "pick-name" }, m.name + (isUsed?" (in use)":"") + (state.favs.includes(m.id)?" ⭐":"")),
+                  h("div", { className: "pick-meta" }, m.prepTime + " prep · " + m.cookTime + " cook · ~$" + (m.cost||12))
+                ),
+                isCurrent
+                  ? h("span", { style:{fontSize:"0.75rem",color:"#555"} }, "current")
+                  : h("button", { className: "pick-btn", onClick: e => { e.stopPropagation(); pickMeal(state.pickIdx, m.id); } }, "Pick")
+              );
+            })
+          )
+        );
+        root.appendChild(overlay);
+      }
+
+      // RECIPE MODAL
+      if (state.modal !== null && state.plan[state.modal]) {
+        const m = state.plan[state.modal];
+        const overlay = h("div", { className: "modal-bg", onClick: () => setState({ modal: null }) },
+          h("div", { className: "modal", onClick: e => e.stopPropagation() },
+            h("button", { className: "close-btn", onClick: () => setState({ modal: null }) }, "✕"),
+            h("div", { className: "modal-day" }, m.day),
+            h("h2", {}, m.name),
+            h("div", { className: "meal-info", style:{marginTop:12,paddingTop:12,borderTop:"1px solid #222"} },
+              h("span", {}, h("b", {}, "Prep "), m.prepTime),
+              h("span", {}, h("b", {}, "Cook "), m.cookTime),
+              h("span", {}, h("b", {}, "Cal "), "~" + Math.round((m.cal||400)*ratio)),
+              h("span", {}, h("b", {}, "~$" + Math.round((m.cost||12)*ratio)))
+            ),
+            h("div", { className: "slbl" }, "Ingredients"),
+            ...m.ingredients.map(ing => h("div", { className: "ing-row" },
+              h("span", { className: "ing-amt" }, ratio!==1 ? ing.amount.replace(/[\d.]+/, n => Math.round(parseFloat(n)*ratio*4)/4) : ing.amount),
+              h("span", { className: "ing-name" }, ing.name)
+            )),
+            h("div", { className: "slbl" }, "Instructions"),
+            ...m.steps.map((s, i) => h("div", { className: "step-row" },
+              h("div", { className: "step-n" }, i+1),
+              h("div", { className: "step-t" }, s)
+            ))
+          )
+        );
+        root.appendChild(overlay);
+      }
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
