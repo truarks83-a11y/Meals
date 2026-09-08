@@ -1,3 +1,17 @@
+
+
+Skip to content
+Using Gmail with screen readers
+Conversations
+Get started with Gmail
+Customize your inbox
+Change profile image
+Import contacts and mail
+Get Gmail for mobile
+64% of 15 GB used
+Terms · Privacy · Program Policies
+Last account activity: 0 minutes ago
+Currently being used in 1 other location · Details
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -136,6 +150,63 @@
 </head>
 <body>
   <div id="root"></div>
+
+  <!-- Standalone recipe form - lives outside render cycle entirely -->
+  <div id="recipe-form-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;overflow-y:auto;padding:20px">
+    <div style="max-width:560px;margin:0 auto;background:#1a1a1a;border:1px solid #333;border-radius:14px;padding:22px">
+      <h3 style="color:#f0ebe0;font-size:1.1rem;margin-bottom:16px">Add Recipe</h3>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Name *</label>
+        <input id="rf-name" placeholder="e.g. Chicken Stir Fry" autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box">
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+          <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Prep</label>
+          <input id="rf-prep" placeholder="15 min" autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box">
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+          <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Cook</label>
+          <input id="rf-cook" placeholder="30 min" autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+          <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Cal/serving</label>
+          <input id="rf-cal" type="number" placeholder="450" autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box">
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+          <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Est. Cost $</label>
+          <input id="rf-cost" type="number" placeholder="12" autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Description</label>
+        <input id="rf-desc" placeholder="One line about the dish" autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Ingredients *</label>
+        <textarea id="rf-ings" rows="6" placeholder="One per line, amount first:&#10;2 cups flour&#10;1 tsp salt&#10;3 cloves garlic" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box;line-height:1.6;font-family:inherit;resize:vertical"></textarea>
+        <span style="font-size:0.72rem;color:#555">One per line — amount first e.g. 2 cups flour</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Steps *</label>
+        <textarea id="rf-steps" rows="6" placeholder="One step per line:&#10;Preheat oven to 375F.&#10;Mix ingredients." style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box;line-height:1.6;font-family:inherit;resize:vertical"></textarea>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:16px">
+        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Or paste a recipe URL</label>
+        <div style="display:flex;gap:8px">
+          <input id="rf-url" placeholder="https://www.allrecipes.com/recipe/..." autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;flex:1;box-sizing:border-box">
+          <button onclick="fetchFromUrl()" style="background:transparent;border:1px solid #c8a96e;color:#c8a96e;padding:10px 14px;border-radius:7px;font-size:0.9rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Fetch</button>
+        </div>
+        <span style="font-size:0.72rem;color:#555">Works with AllRecipes, Food Network, Tasty and most recipe sites</span>
+      </div>
+      <div id="rf-err" style="color:#e08080;font-size:0.85rem;margin-bottom:10px;display:none"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="saveFormFromDom()" style="background:#c8a96e;color:#111;border:none;padding:12px 26px;border-radius:7px;font-size:0.95rem;font-weight:700;cursor:pointer">Save Recipe</button>
+        <button onclick="closeRecipeForm()" style="background:transparent;border:1px solid #444;color:#888;padding:12px 20px;border-radius:7px;font-size:0.95rem;cursor:pointer">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script>
 const MEAL_DB = [
@@ -349,6 +420,107 @@ const MEAL_DB = [
       if (isCustom) { setState({ custom: state.custom.filter(m => m.id !== id) }); return; }
       const removed = state.removed.includes(id) ? state.removed.filter(x => x !== id) : [...state.removed, id];
       setState({ removed });
+    }
+
+    function openRecipeForm() {
+      document.getElementById("recipe-form-overlay").style.display = "block";
+      document.body.style.overflow = "hidden";
+      // Clear form
+      ["rf-name","rf-prep","rf-cook","rf-cal","rf-cost","rf-desc","rf-ings","rf-steps","rf-url"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      const err = document.getElementById("rf-err");
+      if (err) { err.style.display = "none"; err.textContent = ""; }
+    }
+
+    function closeRecipeForm() {
+      document.getElementById("recipe-form-overlay").style.display = "none";
+      document.body.style.overflow = "";
+    }
+
+    function getFormValues() {
+      return {
+        name: (document.getElementById("rf-name") || {}).value || "",
+        prep: (document.getElementById("rf-prep") || {}).value || "",
+        cook: (document.getElementById("rf-cook") || {}).value || "",
+        cal: (document.getElementById("rf-cal") || {}).value || "",
+        cost: (document.getElementById("rf-cost") || {}).value || "",
+        desc: (document.getElementById("rf-desc") || {}).value || "",
+        ings: (document.getElementById("rf-ings") || {}).value || "",
+        steps: (document.getElementById("rf-steps") || {}).value || "",
+      };
+    }
+
+    async function fetchFromUrl() {
+      const url = (document.getElementById("rf-url") || {}).value || "";
+      if (!url.trim()) { setState({ ferr: "Paste a recipe URL first." }); return; }
+      setState({ ferr: "Fetching recipe…" });
+      try {
+        // Use Apps Script to fetch the URL server-side (avoids CORS)
+        const proxyUrl = SCRIPT_URL + "?fetch=" + encodeURIComponent(url);
+        const res = await fetch(proxyUrl);
+        const data = await res.json();
+        if (data.recipe) {
+          const r = data.recipe;
+          // Pre-fill the form fields directly in the DOM
+          if (document.getElementById("rf-name")) document.getElementById("rf-name").value = r.name || "";
+          if (document.getElementById("rf-desc")) document.getElementById("rf-desc").value = r.description || "";
+          if (document.getElementById("rf-prep")) document.getElementById("rf-prep").value = r.prepTime || "";
+          if (document.getElementById("rf-cook")) document.getElementById("rf-cook").value = r.cookTime || "";
+          if (document.getElementById("rf-ings")) document.getElementById("rf-ings").value = (r.ingredients || []).join("\n");
+          if (document.getElementById("rf-steps")) document.getElementById("rf-steps").value = (r.steps || []).join("\n");
+          if (errEl) { errEl.style.display = "block"; errEl.style.color = "#4aaa6a"; errEl.textContent = "Recipe loaded! Review and save."; }
+        } else {
+          if (errEl) { errEl.style.display = "block"; errEl.style.color = "#e08080"; errEl.textContent = data.error || "Couldn't extract recipe. Try pasting manually."; }
+        }
+      } catch(e) {
+        if (document.getElementById("rf-err")) { document.getElementById("rf-err").style.display = "block"; document.getElementById("rf-err").textContent = "Couldn't fetch that URL. Try pasting manually."; }
+      }
+    }
+
+    function saveFormFromDom() {
+      const f = getFormValues();
+      const fe = document.getElementById("rf-err");
+      if (!f.name.trim()) { if(fe){fe.style.display="block";fe.style.color="#e08080";fe.textContent="Recipe name is required.";} return; }
+      if (!f.ings.trim()) { if(fe){fe.style.display="block";fe.textContent="Add at least one ingredient.";} return; }
+      if (!f.steps.trim()) { if(fe){fe.style.display="block";fe.textContent="Add at least one step.";} return; }
+
+      const aisleMaps = [
+        {aisle:"Produce",kw:["tomato","pepper","onion","zucchini","spinach","kale","carrot","eggplant","cabbage","corn","mushroom","asparagus","lemon","lime","avocado","potato","fennel","lettuce","cucumber","broccoli","celery","garlic","apple","berry"]},
+        {aisle:"Meat & Fish",kw:["chicken","beef","pork","lamb","salmon","shrimp","prawn","tuna","fish","duck","turkey","bacon","sausage","steak","ribeye","ground","meatball"]},
+        {aisle:"Dairy & Eggs",kw:["cream","butter","cheese","parmesan","mozzarella","yogurt","feta","milk","egg","paneer","ghee","cheddar"]},
+        {aisle:"Frozen",kw:["frozen"]},
+        {aisle:"Grains & Bread",kw:["rice","pasta","noodle","bread","pita","bun","gnocchi","spaghetti","tortilla","flour","flatbread","lentil","chickpea","bean","breadcrumb","ramen","baguette","couscous","grits","oat"]},
+        {aisle:"Herbs & Spices",kw:["thyme","basil","parsley","coriander","oregano","cumin","paprika","turmeric","cinnamon","cardamom","bay","saffron","allspice","seasoning","spice","herb","rosemary","sage","dill","chili","pepper","garlic powder","onion powder","garam"]},
+      ];
+
+      const ingredients = f.ings.split("\n").filter(l => l.trim()).map(line => {
+        const clean = line.trim();
+        const parts = clean.match(/^(\S+(?:\s+\S+)?)\s+(.+)$/);
+        let ing = { amount: "", name: clean, aisle: "Pantry" };
+        if (parts && /[\d\/]/.test(parts[1])) ing = { amount: parts[1], name: parts[2], aisle: "Pantry" };
+        const lower = ing.name.toLowerCase();
+        for (const { aisle, kw } of aisleMaps) {
+          if (kw.some(k => lower.includes(k))) { ing.aisle = aisle; break; }
+        }
+        return ing;
+      });
+
+      const steps = f.steps.split("\n").filter(l => l.trim()).map(l => l.replace(/^\d+[\.\)]\s*/, "").trim());
+
+      const r = {
+        id: Date.now(), name: f.name.trim(),
+        description: f.desc.trim() || f.name.trim(),
+        prepTime: f.prep || "?", cookTime: f.cook || "?", cookMins: 30,
+        cal: parseInt(f.cal) || 400, cost: parseFloat(f.cost) || 12,
+        ingredients, steps, isCustom: true
+      };
+      state.custom = [...state.custom, r];
+      saveState(state);
+      saveToSheet(state);
+      closeRecipeForm();
+      render();
     }
 
     function saveForm() {
@@ -598,38 +770,10 @@ const MEAL_DB = [
 
         // LIBRARY TAB
         ...(state.tab === "library" ? [
-          h("button", { className: "btn-sm", style:{width:"100%",marginBottom:12,padding:"10px"}, onClick: () => setState({ showForm: !state.showForm }) },
-            state.showForm ? "✕ Cancel" : "+ Add your own recipe"
+          h("button", { className: "btn-sm", style:{width:"100%",marginBottom:12,padding:"10px"}, onClick: () => openRecipeForm() },
+            "+ Add your own recipe"
           ),
-          ...(state.showForm ? [
-            h("div", { className: "form-box" },
-              h("h3", {}, "Add Recipe"),
-              h("div", { className: "field" }, h("label", {}, "Name *"), (() => { const i = document.createElement("input"); i.value = state.form.name; i.placeholder = "e.g. Chicken Stir Fry"; i.addEventListener("input", e => updateForm("name", e.target.value)); return i; })()),
-              h("div", { className: "field-row" },
-                h("div", { className: "field" }, h("label", {}, "Prep"), (() => { const i = document.createElement("input"); i.value = state.form.prep; i.placeholder = "15 min"; i.addEventListener("input", e => updateForm("prep", e.target.value)); return i; })()),
-                h("div", { className: "field" }, h("label", {}, "Cook"), (() => { const i = document.createElement("input"); i.value = state.form.cook; i.placeholder = "30 min"; i.addEventListener("input", e => updateForm("cook", e.target.value)); return i; })())
-              ),
-              h("div", { className: "field-row" },
-                h("div", { className: "field" }, h("label", {}, "Cal/serving"), (() => { const i = document.createElement("input"); i.type="number"; i.value = state.form.cal; i.placeholder = "450"; i.addEventListener("input", e => updateForm("cal", e.target.value)); return i; })()),
-                h("div", { className: "field" }, h("label", {}, "Est. Cost $"), (() => { const i = document.createElement("input"); i.type="number"; i.value = state.form.cost; i.placeholder = "12"; i.addEventListener("input", e => updateForm("cost", e.target.value)); return i; })())
-              ),
-              h("div", { className: "field" }, h("label", {}, "Description"), (() => { const i = document.createElement("input"); i.value = state.form.desc; i.placeholder = "One line about the dish"; i.addEventListener("input", e => updateForm("desc", e.target.value)); return i; })()),
-              h("div", { className: "field" },
-                h("label", {}, "Ingredients *"),
-                (() => { const ta = document.createElement("textarea"); ta.rows=4; ta.value=state.form.ings; ta.placeholder="One per line, amount first:\n2 cups flour\n1 tsp salt"; ta.addEventListener("input", e => updateForm("ings", e.target.value)); ta.style.cssText="width:100%;background:#111;border:1px solid #333;color:#f0ebe0;padding:9px 11px;border-radius:7px;font-size:0.88rem;resize:vertical;font-family:inherit;"; return ta; })(),
-                h("span", { className: "field-hint" }, "One per line — amount first")
-              ),
-              h("div", { className: "field" },
-                h("label", {}, "Steps *"),
-                (() => { const ta = document.createElement("textarea"); ta.rows=4; ta.value=state.form.steps; ta.placeholder="One per line:\nPreheat oven to 375F."; ta.addEventListener("input", e => updateForm("steps", e.target.value)); ta.style.cssText="width:100%;background:#111;border:1px solid #333;color:#f0ebe0;padding:9px 11px;border-radius:7px;font-size:0.88rem;resize:vertical;font-family:inherit;"; return ta; })()
-              ),
-              state.ferr ? h("div", { className: "ferr" }, state.ferr) : null,
-              h("div", { style:{display:"flex",gap:8,marginTop:12} },
-                h("button", { className: "btn", onClick: saveForm }, "Save Recipe"),
-                h("button", { className: "btn-sm", onClick: () => setState({ showForm: false }) }, "Cancel")
-              )
-            )
-          ] : []),
+
           (() => {
             const si = document.createElement("input");
             si.className = "lib-search"; si.placeholder = "Search recipes…"; si.value = state.search;
@@ -723,6 +867,66 @@ const MEAL_DB = [
       }
     }
 
+    function injectForm() {
+      const placeholder = document.getElementById("form-placeholder");
+      if (!placeholder) return;
+      if (document.getElementById("rf-name")) return;
+
+      // Build form using innerHTML with single quotes to avoid backtick issues
+      placeholder.innerHTML = [
+        '<style>',
+        '.form-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:18px;margin-bottom:16px}',
+        '.form-box h3{font-size:1rem;margin-bottom:14px;color:#f0ebe0;font-weight:700}',
+        '.rf-field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}',
+        '.rf-field label{font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666}',
+        '.rf-field input,.rf-field textarea{background:#111;border:1px solid #333;color:#f0ebe0;padding:9px 11px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box;font-family:inherit}',
+        '.rf-row{display:flex;gap:10px}',
+        '.rf-row .rf-field{flex:1}',
+        '.rf-hint{font-size:0.72rem;color:#444;margin-top:2px}',
+        '.rf-err{color:#e08080;font-size:0.82rem;margin-top:6px;display:none}',
+        '</style>',
+        '<div class="form-box">',
+        '<h3>Add Recipe</h3>',
+        '<div class="rf-field"><label>Name *</label><input id="rf-name" placeholder="e.g. Chicken Stir Fry" autocomplete="off"></div>',
+        '<div class="rf-row">',
+        '<div class="rf-field"><label>Prep</label><input id="rf-prep" placeholder="15 min" autocomplete="off"></div>',
+        '<div class="rf-field"><label>Cook</label><input id="rf-cook" placeholder="30 min" autocomplete="off"></div>',
+        '</div>',
+        '<div class="rf-row">',
+        '<div class="rf-field"><label>Cal/serving</label><input id="rf-cal" type="number" placeholder="450" autocomplete="off"></div>',
+        '<div class="rf-field"><label>Est. Cost $</label><input id="rf-cost" type="number" placeholder="12" autocomplete="off"></div>',
+        '</div>',
+        '<div class="rf-field"><label>Description</label><input id="rf-desc" placeholder="One line about the dish" autocomplete="off"></div>',
+        '<div class="rf-field">',
+        '<label>Ingredients *</label>',
+        '<textarea id="rf-ings" rows="6" placeholder="One per line, amount first:&#10;2 cups flour&#10;1 tsp salt&#10;3 cloves garlic" style="line-height:1.6"></textarea>',
+        '<span class="rf-hint">One per line, amount first e.g. 2 cups flour</span>',
+        '</div>',
+        '<div class="rf-field">',
+        '<label>Steps *</label>',
+        '<textarea id="rf-steps" rows="6" placeholder="One step per line:&#10;Preheat oven to 375F.&#10;Mix ingredients together." style="line-height:1.6"></textarea>',
+        '</div>',
+        '<div class="rf-field">',
+        '<label>Or paste a recipe URL</label>',
+        '<div style="display:flex;gap:8px">',
+        '<input id="rf-url" placeholder="https://www.allrecipes.com/recipe/..." style="flex:1" autocomplete="off">',
+        '<button id="rf-fetch-btn" style="background:transparent;border:1px solid #c8a96e;color:#c8a96e;padding:8px 14px;border-radius:7px;font-size:0.85rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Fetch</button>',
+        '</div>',
+        '<span class="rf-hint">Works with AllRecipes, Food Network, Tasty and most recipe sites</span>',
+        '</div>',
+        '<div id="rf-err" class="rf-err"></div>',
+        '<div style="display:flex;gap:8px;margin-top:14px">',
+        '<button id="rf-save-btn" style="background:#c8a96e;color:#111;border:none;padding:11px 24px;border-radius:7px;font-size:0.9rem;font-weight:600;cursor:pointer">Save Recipe</button>',
+        '<button id="rf-cancel-btn" style="background:transparent;border:1px solid #333;color:#888;padding:11px 18px;border-radius:7px;font-size:0.9rem;cursor:pointer">Cancel</button>',
+        '</div>',
+        '</div>'
+      ].join('');
+
+      document.getElementById("rf-save-btn").addEventListener("click", saveFormFromDom);
+      document.getElementById("rf-cancel-btn").addEventListener("click", () => setState({ showForm: false }));
+      document.getElementById("rf-fetch-btn").addEventListener("click", fetchFromUrl);
+    }
+
     // Initial render — try to load from shared sheet first
     async function init() {
       const syncBanner = document.createElement("div");
@@ -758,3 +962,5 @@ const MEAL_DB = [
   </script>
 </body>
 </html>
+index-5.html
+Displaying index-5.html.
