@@ -1,18 +1,17 @@
-None selected
+None selected 
 
 Skip to content
 Using Gmail with screen readers
-formu 
-(no subject)
-Inbox
-
-Formulation Station <formulationstationvt@gmail.com>
-Attachments
-2:34 PM (2 minutes ago)
-to me
-
- One attachment
-  •  Scanned by Gmail
+Conversations
+Get started with Gmail
+Customize your inbox
+Change profile image
+Import contacts and mail
+Get Gmail for mobile
+64% of 15 GB used
+Terms · Privacy · Program Policies
+Last account activity: 0 minutes ago
+Currently being used in 1 other location · Details
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -700,6 +699,7 @@ const MEAL_DB = [
                   ] : [
                     h("div", { className: "meal-name" }, meal.name),
                     h("div", { className: "meal-desc" }, meal.description),
+                    meal.link ? h("a", { href: meal.link, target:"_blank", style:{display:"block",fontSize:"0.78rem",color:"#c8a96e",textDecoration:"none",marginBottom:"6px"} }, "🔗 View full recipe ↗") : null,
                     h("div", { className: "meal-info" },
                       h("span", {}, h("b", {}, "Prep "), meal.prepTime),
                       h("span", {}, h("b", {}, "Cook "), meal.cookTime),
@@ -777,11 +777,24 @@ const MEAL_DB = [
           ),
 
           (() => {
+            // Use existing search input if already rendered to avoid keyboard dismissal
+            const existing = document.getElementById("lib-search-input");
+            if (existing) {
+              existing.style.display = "";
+              return document.createTextNode(""); // placeholder - real input stays in DOM
+            }
             const si = document.createElement("input");
+            si.id = "lib-search-input";
             si.className = "lib-search"; si.placeholder = "Search recipes…"; si.value = state.search;
-            si.addEventListener("input", e => setState({ search: e.target.value }));
+            si.addEventListener("input", e => {
+              state.search = e.target.value;
+              // Only re-render the recipe list, not the whole page
+              const listEl = document.getElementById("lib-recipe-list");
+              if (listEl) renderLibraryList(listEl);
+            });
             return si;
           })(),
+          h("div", { id: "lib-recipe-list" }),
           (() => {
             const all = [...MEAL_DB.map(m=>({...m,isCustom:false})), ...state.custom.map(m=>({...m,isCustom:true}))];
             const visible = all.filter(m => !state.search || m.name.toLowerCase().includes(state.search.toLowerCase()));
@@ -928,6 +941,51 @@ const MEAL_DB = [
       // fetch button removed - using link field instead
     }
 
+    function renderLibraryList(container) {
+      if (!container) return;
+      const all = [...MEAL_DB.map(m=>({...m,isCustom:false})), ...state.custom.map(m=>({...m,isCustom:true}))];
+      const search = (document.getElementById("lib-search-input")||{}).value || state.search || "";
+      const visible = all.filter(m => !search || m.name.toLowerCase().includes(search.toLowerCase()));
+      container.innerHTML = "";
+      visible.forEach(r => {
+        const isDel = state.removed.includes(r.id);
+        const isFav = state.favs.includes(r.id);
+        const row = document.createElement("div");
+        row.className = "rrow" + (isDel?" del":"");
+        row.innerHTML = '<div><div class="rname">' + r.name + (r.isCustom?" ★":"") + '</div>'
+          + '<div class="rmeta">' + (r.prepTime||"?") + " prep · " + (r.cookTime||"?") + " cook · ~$" + (r.cost||12) + "/meal" + (isFav?" ⭐":"") + '</div>'
+          + (r.link ? '<a href="' + r.link + '" target="_blank" style="font-size:0.75rem;color:#c8a96e;text-decoration:none">🔗 View recipe</a>' : '')
+          + '</div><div class="ractions">'
+          + '<button class="fav-btn' + (isFav?" on":"") + '" data-id="' + r.id + '" onclick="toggleLibFav(this)">' + (isFav?"⭐":"☆ Fav") + '</button>'
+          + (isDel
+            ? '<button class="restore-btn" data-id="' + r.id + '" onclick="restoreRecipe(this)">Restore</button>'
+            : '<button class="del-btn" data-id="' + r.id + '" data-custom="' + (!!r.isCustom) + '" onclick="removeRecipe(this)">Remove</button>')
+          + '</div>';
+        container.appendChild(row);
+      });
+      if (visible.length === 0) container.innerHTML = '<div style="text-align:center;padding:30px;color:#444">No recipes found.</div>';
+    }
+
+    function toggleLibFav(btn) {
+      const id = parseInt(btn.dataset.id);
+      state.favs = state.favs.includes(id) ? state.favs.filter(x=>x!==id) : [...state.favs, id];
+      saveState(state); saveToSheet(state);
+      renderLibraryList(document.getElementById("lib-recipe-list"));
+    }
+    function removeRecipe(btn) {
+      const id = parseInt(btn.dataset.id);
+      if (btn.dataset.custom==="true") state.custom = state.custom.filter(m=>m.id!==id);
+      else state.removed = [...state.removed, id];
+      saveState(state); saveToSheet(state);
+      renderLibraryList(document.getElementById("lib-recipe-list"));
+    }
+    function restoreRecipe(btn) {
+      const id = parseInt(btn.dataset.id);
+      state.removed = state.removed.filter(x=>x!==id);
+      saveState(state); saveToSheet(state);
+      renderLibraryList(document.getElementById("lib-recipe-list"));
+    }
+
     // Initial render — try to load from shared sheet first
     async function init() {
       const syncBanner = document.createElement("div");
@@ -963,5 +1021,5 @@ const MEAL_DB = [
   </script>
 </body>
 </html>
-index-6.html
-Displaying index-6.html.
+index-7.html
+Displaying index-7.html.
