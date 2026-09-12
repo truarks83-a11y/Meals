@@ -433,7 +433,7 @@ const MEAL_DB = [
         desc: (document.getElementById("rf-desc") || {}).value || "",
         ings: (document.getElementById("rf-ings") || {}).value || "",
         steps: (document.getElementById("rf-steps") || {}).value || "",
-        link: (document.getElementById("rf-link") || (document.getElementById("rf-link2")) || {}).value || "",
+        link: ((document.getElementById("rf-link") || {}).value || (document.getElementById("rf-link2") || {}).value || ""),
       };
     }
 
@@ -499,7 +499,7 @@ const MEAL_DB = [
         description: f.desc.trim() || f.name.trim(),
         prepTime: f.prep || "?", cookTime: f.cook || "?", cookMins: 30,
         cal: parseInt(f.cal) || 400, cost: parseFloat(f.cost) || 12,
-        ingredients, steps, link: f.url || "", isCustom: true
+        ingredients, steps, link: (f.link || f.url || "").trim(), isCustom: true
       };
       state.custom = [...state.custom, r];
       saveState(state);
@@ -520,7 +520,7 @@ const MEAL_DB = [
         id: Date.now(), name: state.form.name.trim(), description: state.form.desc.trim() || state.form.name.trim(),
         prepTime: state.form.prep || "?", cookTime: state.form.cook || "?", cookMins: 30,
         cal: parseInt(state.form.cal) || 400, cost: parseFloat(state.form.cost) || 12,
-        ingredients, steps, link: (f.link||"").trim(), isCustom: true
+        ingredients, steps, link: (state.form.link || "").trim(), isCustom: true
       };
       setState({ custom: [...state.custom, r], form: { name:"", desc:"", prep:"", cook:"", cal:"", cost:"", ings:"", steps:"" }, showForm: false, ferr: "" });
     }
@@ -1013,5 +1013,3 @@ const MEAL_DB = [
   </script>
 </body>
 </html>
-index-8.html
-Displaying index-8.html.
