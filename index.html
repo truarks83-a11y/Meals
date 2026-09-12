@@ -1,3 +1,18 @@
+None selected
+
+Skip to content
+Using Gmail with screen readers
+formu 
+(no subject)
+Inbox
+
+Formulation Station <formulationstationvt@gmail.com>
+Attachments
+2:34 PM (2 minutes ago)
+to me
+
+ One attachment
+  •  Scanned by Gmail
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -175,16 +190,14 @@
         <span style="font-size:0.72rem;color:#555">One per line — amount first e.g. 2 cups flour</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
-        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Steps *</label>
-        <textarea id="rf-steps" rows="6" placeholder="One step per line:&#10;Preheat oven to 375F.&#10;Mix ingredients." style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box;line-height:1.6;font-family:inherit;resize:vertical"></textarea>
+        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Steps (optional — or just use the recipe link above)</label>
+        <textarea id="rf-steps" rows="4" placeholder="One step per line:&#10;Preheat oven to 375F.&#10;Mix ingredients." style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box;line-height:1.6;font-family:inherit;resize:vertical"></textarea>
       </div>
       <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:16px">
-        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Or paste a recipe URL</label>
-        <div style="display:flex;gap:8px">
-          <input id="rf-url" placeholder="https://www.allrecipes.com/recipe/..." autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;flex:1;box-sizing:border-box">
-          <button onclick="fetchFromUrl()" style="background:transparent;border:1px solid #c8a96e;color:#c8a96e;padding:10px 14px;border-radius:7px;font-size:0.9rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Fetch</button>
-        </div>
-        <span style="font-size:0.72rem;color:#555">Works with AllRecipes, Food Network, Tasty and most recipe sites</span>
+        <label style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#666">Recipe Link <span style="color:#555;font-weight:400;text-transform:none;font-size:0.75rem">(optional — paste URL from AllRecipes, Tasty etc)</span></label>
+        <input id="rf-link" placeholder="https://www.allrecipes.com/recipe/..." autocomplete="off" style="background:#111;border:1px solid #333;color:#f0ebe0;padding:10px 12px;border-radius:7px;font-size:1rem;width:100%;box-sizing:border-box">
+        <span style="font-size:0.72rem;color:#555">Tap the link on the recipe card to open the full recipe online</span>
+        <span style="font-size:0.72rem;color:#555">Paste the URL — shows as a link on the recipe card so you can follow the full instructions</span>
       </div>
       <div id="rf-err" style="color:#e08080;font-size:0.85rem;margin-bottom:10px;display:none"></div>
       <div style="display:flex;gap:10px">
@@ -412,7 +425,7 @@ const MEAL_DB = [
       document.getElementById("recipe-form-overlay").style.display = "block";
       document.body.style.overflow = "hidden";
       // Clear form
-      ["rf-name","rf-prep","rf-cook","rf-cal","rf-cost","rf-desc","rf-ings","rf-steps","rf-url"].forEach(id => {
+      ["rf-name","rf-prep","rf-cook","rf-cal","rf-cost","rf-desc","rf-ings","rf-steps","rf-link","rf-link2"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = "";
       });
@@ -435,6 +448,7 @@ const MEAL_DB = [
         desc: (document.getElementById("rf-desc") || {}).value || "",
         ings: (document.getElementById("rf-ings") || {}).value || "",
         steps: (document.getElementById("rf-steps") || {}).value || "",
+        link: (document.getElementById("rf-link") || (document.getElementById("rf-link2")) || {}).value || "",
       };
     }
 
@@ -470,7 +484,7 @@ const MEAL_DB = [
       const fe = document.getElementById("rf-err");
       if (!f.name.trim()) { if(fe){fe.style.display="block";fe.style.color="#e08080";fe.textContent="Recipe name is required.";} return; }
       if (!f.ings.trim()) { if(fe){fe.style.display="block";fe.textContent="Add at least one ingredient.";} return; }
-      if (!f.steps.trim()) { if(fe){fe.style.display="block";fe.textContent="Add at least one step.";} return; }
+      // steps optional — link can substitute
 
       const aisleMaps = [
         {aisle:"Produce",kw:["tomato","pepper","onion","zucchini","spinach","kale","carrot","eggplant","cabbage","corn","mushroom","asparagus","lemon","lime","avocado","potato","fennel","lettuce","cucumber","broccoli","celery","garlic","apple","berry"]},
@@ -500,7 +514,7 @@ const MEAL_DB = [
         description: f.desc.trim() || f.name.trim(),
         prepTime: f.prep || "?", cookTime: f.cook || "?", cookMins: 30,
         cal: parseInt(f.cal) || 400, cost: parseFloat(f.cost) || 12,
-        ingredients, steps, isCustom: true
+        ingredients, steps, link: f.url || "", isCustom: true
       };
       state.custom = [...state.custom, r];
       saveState(state);
@@ -521,7 +535,7 @@ const MEAL_DB = [
         id: Date.now(), name: state.form.name.trim(), description: state.form.desc.trim() || state.form.name.trim(),
         prepTime: state.form.prep || "?", cookTime: state.form.cook || "?", cookMins: 30,
         cal: parseInt(state.form.cal) || 400, cost: parseFloat(state.form.cost) || 12,
-        ingredients, steps, isCustom: true
+        ingredients, steps, link: (f.link||"").trim(), isCustom: true
       };
       setState({ custom: [...state.custom, r], form: { name:"", desc:"", prep:"", cook:"", cal:"", cost:"", ings:"", steps:"" }, showForm: false, ferr: "" });
     }
@@ -601,6 +615,8 @@ const MEAL_DB = [
                 h("div", { className: "share-day" }, m.day),
                 h("div", { className: "share-name" }, m.name),
                 h("div", { className: "share-desc" }, m.description),
+                m.link ? h("a", { href: m.link, target:"_blank", style:{display:"inline-block",marginBottom:"8px",fontSize:"0.82rem",color:"#c8a96e",textDecoration:"none"} }, "🔗 Full recipe online ↗") : null,
+                m.link ? h("a", { href: m.link, target: "_blank", style:{display:"inline-block",marginBottom:"8px",color:"#c8a96e",fontSize:"0.82rem",textDecoration:"none"} }, "🔗 Full recipe") : null,
                 m.note ? h("div", { className: "share-note" }, "📌 " + m.note) : null,
                 h("div", { className: "share-meta" },
                   h("span", {}, h("b", {}, "Prep "), m.prepTime),
@@ -778,7 +794,8 @@ const MEAL_DB = [
                 return h("div", { className: "rrow" + (isDel?" del":"") },
                   h("div", {},
                     h("div", { className: "rname" }, r.name + (r.isCustom?" ★":"")),
-                    h("div", { className: "rmeta" }, r.prepTime + " prep · " + r.cookTime + " cook · ~$" + (r.cost||12) + "/meal" + (isFav?" ⭐":""))
+                    h("div", { className: "rmeta" }, r.prepTime + " prep · " + r.cookTime + " cook · ~$" + (r.cost||12) + "/meal" + (isFav?" ⭐":"")),
+                    r.link ? h("a", { href: r.link, target:"_blank", style:{fontSize:"0.75rem",color:"#c8a96e",textDecoration:"none"} }, "🔗 View recipe") : null
                   ),
                   h("div", { className: "rbtns" },
                     h("button", { className: "btn-sm" + (isFav?" ":" "), style: isFav?{borderColor:"#c8a96e",color:"#c8a96e"}:{}, onClick: () => toggleFav(r.id) }, isFav?"⭐":"☆ Fav"),
@@ -831,6 +848,7 @@ const MEAL_DB = [
             h("button", { className: "close-btn", onClick: () => setState({ modal: null }) }, "✕"),
             h("div", { className: "modal-day" }, m.day),
             h("h2", {}, m.name),
+            m.link ? h("a", { href: m.link, target: "_blank", style:{display:"inline-block",marginBottom:"12px",color:"#c8a96e",fontSize:"0.85rem",textDecoration:"none",borderBottom:"1px solid #c8a96e40"} }, "🔗 View full recipe →") : null,
             h("div", { className: "meal-info", style:{marginTop:12,paddingTop:12,borderTop:"1px solid #222"} },
               h("span", {}, h("b", {}, "Prep "), m.prepTime),
               h("span", {}, h("b", {}, "Cook "), m.cookTime),
@@ -894,11 +912,8 @@ const MEAL_DB = [
         '</div>',
         '<div class="rf-field">',
         '<label>Or paste a recipe URL</label>',
-        '<div style="display:flex;gap:8px">',
-        '<input id="rf-url" placeholder="https://www.allrecipes.com/recipe/..." style="flex:1" autocomplete="off">',
-        '<button id="rf-fetch-btn" style="background:transparent;border:1px solid #c8a96e;color:#c8a96e;padding:8px 14px;border-radius:7px;font-size:0.85rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Fetch</button>',
-        '</div>',
-        '<span class="rf-hint">Works with AllRecipes, Food Network, Tasty and most recipe sites</span>',
+        '<input id="rf-link" placeholder="https://www.allrecipes.com/recipe/..." autocomplete="off" style="width:100%;box-sizing:border-box">',
+        '<span class="rf-hint">Stored as a reference — tap it on the recipe card to open online</span>',
         '</div>',
         '<div id="rf-err" class="rf-err"></div>',
         '<div style="display:flex;gap:8px;margin-top:14px">',
@@ -910,7 +925,7 @@ const MEAL_DB = [
 
       document.getElementById("rf-save-btn").addEventListener("click", saveFormFromDom);
       document.getElementById("rf-cancel-btn").addEventListener("click", () => setState({ showForm: false }));
-      document.getElementById("rf-fetch-btn").addEventListener("click", fetchFromUrl);
+      // fetch button removed - using link field instead
     }
 
     // Initial render — try to load from shared sheet first
@@ -948,3 +963,5 @@ const MEAL_DB = [
   </script>
 </body>
 </html>
+index-6.html
+Displaying index-6.html.
