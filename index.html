@@ -537,8 +537,11 @@ const MEAL_DB = [
     }
 
     function updateNote(idx, val) {
-      const newPlan = state.plan.map((m, i) => i === idx ? { ...m, note: val } : m);
-      setState({ plan: newPlan });
+      // Update without re-rendering to keep keyboard open
+      if (state.plan[idx]) state.plan[idx] = { ...state.plan[idx], note: val };
+      saveState(state);
+      clearTimeout(window._noteSaveTimer);
+      window._noteSaveTimer = setTimeout(() => saveToSheet(state), 1500);
     }
 
     function updateForm(key, val) {
@@ -600,8 +603,8 @@ const MEAL_DB = [
                 h("div", { className: "share-day" }, m.day),
                 h("div", { className: "share-name" }, m.name),
                 h("div", { className: "share-desc" }, m.description),
-                m.link ? h("a", { href: m.link, target:"_blank", style:{display:"inline-block",marginBottom:"8px",fontSize:"0.82rem",color:"#c8a96e",textDecoration:"none"} }, "🔗 Full recipe online ↗") : null,
-                m.link ? h("a", { href: m.link, target: "_blank", style:{display:"inline-block",marginBottom:"8px",color:"#c8a96e",fontSize:"0.82rem",textDecoration:"none"} }, "🔗 Full recipe") : null,
+
+
                 m.note ? h("div", { className: "share-note" }, "📌 " + m.note) : null,
                 h("div", { className: "share-meta" },
                   h("span", {}, h("b", {}, "Prep "), m.prepTime),
@@ -685,17 +688,20 @@ const MEAL_DB = [
                   ] : [
                     h("div", { className: "meal-name" }, meal.name),
                     h("div", { className: "meal-desc" }, meal.description),
-                    meal.link ? h("a", { href: meal.link, target:"_blank", style:{display:"block",fontSize:"0.78rem",color:"#c8a96e",textDecoration:"none",marginBottom:"6px"} }, "🔗 View full recipe ↗") : null,
+
                     h("div", { className: "meal-info" },
                       h("span", {}, h("b", {}, "Prep "), meal.prepTime),
                       h("span", {}, h("b", {}, "Cook "), meal.cookTime),
                       h("span", {}, h("b", {}, "~$" + Math.round((meal.cost||12)*ratio)))
                     ),
                     (() => {
+                      const noteId = "note-" + i;
+                      const existing = document.getElementById(noteId);
+                      if (existing) { existing.value = meal.note || ""; return document.createTextNode(""); }
                       const ta = document.createElement("textarea");
-                      ta.className = ""; ta.rows = 1; ta.placeholder = "Add a note…";
+                      ta.id = noteId; ta.rows = 1; ta.placeholder = "Add a note…";
                       ta.value = meal.note || "";
-                      ta.addEventListener("input", e => updateNote(i, e.target.value));
+                      ta.oninput = (e => { const idx=i; return function() { updateNote(idx, this.value); }; })(i);
                       ta.style.cssText = "width:100%;background:#111;border:1px solid #222;color:#ccc;padding:7px 10px;border-radius:6px;font-size:0.82rem;resize:none;font-family:inherit;margin-bottom:8px;";
                       return ta;
                     })(),
@@ -847,7 +853,7 @@ const MEAL_DB = [
             h("button", { className: "close-btn", onClick: () => setState({ modal: null }) }, "✕"),
             h("div", { className: "modal-day" }, m.day),
             h("h2", {}, m.name),
-            m.link ? h("a", { href: m.link, target: "_blank", style:{display:"inline-block",marginBottom:"12px",color:"#c8a96e",fontSize:"0.85rem",textDecoration:"none",borderBottom:"1px solid #c8a96e40"} }, "🔗 View full recipe →") : null,
+            m.link ? h("a", { href: m.link, target:"_blank", style:{display:"block",marginBottom:"14px",background:"#1a1812",border:"1px solid #c8a96e",color:"#c8a96e",padding:"10px 16px",borderRadius:"8px",fontSize:"0.88rem",textDecoration:"none",textAlign:"center",fontWeight:"600"} }, "🔗 Open Full Recipe Online ↗") : null,
             h("div", { className: "meal-info", style:{marginTop:12,paddingTop:12,borderTop:"1px solid #222"} },
               h("span", {}, h("b", {}, "Prep "), m.prepTime),
               h("span", {}, h("b", {}, "Cook "), m.cookTime),
@@ -1007,5 +1013,5 @@ const MEAL_DB = [
   </script>
 </body>
 </html>
-index-7.html
-Displaying index-7.html.
+index-8.html
+Displaying index-8.html.
